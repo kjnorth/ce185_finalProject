@@ -2,6 +2,13 @@
 
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{% this is so dank I've been trying to do this FOREVER
+  colorlinks=true,% all links are colored and not outlined
+  linkcolor=black,% hyperlink (PDF internal links like in toc) colors will be black
+  urlcolor=blue,
+  citecolor=black
+}
 
 \begin{document}
 
@@ -31,7 +38,7 @@ Aircraft, Airplane, RC Airplane, UAV, Autonomous, Wildfire, Wildfire Detection, 
 
 \section{Project Introduction}
 
-\IEEEPARstart{F}{orever} Flight is a persistent aerial monitoring system to detect wildfires in fire-prone areas. It will consist of a plane with a mounted IR camera to detect fires below and a flight controller capable of autopilot, guidable with GPS waypoints sent from a laptop computer on the ground. This project was named ‘Forever Flight' for its goal of never having to recharge its batteries, staying aloft and performing fire detection while the sun is up, charging back up from solar energy and our power regenerative mechanisms. 
+\IEEEPARstart{F}{orever} Flight is a persistent aerial monitoring system to detect wildfires in fire-prone areas. It will consist of a plane with a mounted IR camera to detect fires below and a flight controller capable of autopilot, guidable with GPS waypoints sent from a laptop computer on the ground. This project was named `Forever Flight' for its goal of never having to recharge its batteries, staying aloft and performing fire detection while the sun is up, charging back up from solar energy and our power regenerative mechanisms. 
 
 This project was inspired by the recent California wildfires like the Camp Fire, a 2018 fire in Northern California that caused \$16.5 billion in damage and claimed 86 lives [1]. The reason that these fires were so deadly is because there was no early warning system that detected the fire before it started ripping through towns like Paradise, California. The team hopes that Forever Flight will prevent fires like this.
 
@@ -57,7 +64,7 @@ MAVLink is a protocol commonly used between drones and ground stations. Most aut
 
 The start frame transmission is the hex character set 0xFE, which tells the ground station that the packet is incoming. The next byte tells the receiver how many bytes in the payload to expect. The next set of bytes are for identifying the system sending the message, the component sending the message, and the packet sequence.
 
-The most important part of this packet is the message id, the 5th byte in the index. This byte signals which MAVLink message the incoming data corresponds to. MAVLink messages are defined in a file called common.xml. Every message coming in indexes to one of the messages in the common.xml file. For instance, several times a second a ‘heartbeat' message is sent from the plane to the ground station. This message is declared in the common.xml file as having ID 0. When the ground station receives this message, it reads that xml file, looking for a message definition that matches the incoming ID. When it finds it, it interprets the payload attached to the MAVLink message as the attributes associated with the message definition in the xml file. 
+The most important part of this packet is the message id, the 5th byte in the index. This byte signals which MAVLink message the incoming data corresponds to. MAVLink messages are defined in a file called common.xml. Every message coming in indexes to one of the messages in the common.xml file. For instance, several times a second a `heartbeat' message is sent from the plane to the ground station. This message is declared in the common.xml file as having ID 0. When the ground station receives this message, it reads that xml file, looking for a message definition that matches the incoming ID. When it finds it, it interprets the payload attached to the MAVLink message as the attributes associated with the message definition in the xml file. 
 The autopilot that was chosen for this project uses the MAVLink protocol to communicate with the ground station. As a result, the team has become very familiar with its function. 
 \subsubsection{ArduPilot}
 After looking at all the free and open source autopilots out there on the market, Ardupilot, an open source autopilot that runs on the Pixhawk4, was selected. This firmware can be run on a variety of different platforms: there is an ArduSub, an ArduCopter, an ArduTractor, and obviously an ArduPlane. The flight controller for this project uses the ArduPlane version. 
@@ -226,6 +233,150 @@ All information in this section was found in \cite{GliderBirds}. One way to exte
 \end{figure}
 Reinforcement learning is essentially a way for a system to learn based on trial and error; if it preforms an action and things go well, it remembers that as a good situation, while on the other hand, poor situations from bad maneuvers are kept in the ``don't do again" list. The physicists started by simulating gliders in turbulent wind flow to find important parameters that improve navigation through a thermal. They then moved on to testing a real plane with a 2 meter wingspan. The plane was equipped with a flight controller running modified ArduPlane code to pilot the aircraft through updrafts. Researchers soon discovered that they needed to write algorithms to estimate ``environmental cues" to maneuver the glider in such a way to gain the most lift out of the environment. For example, when a pocket of greater lift is at a diagonal to the aircraft's forward heading, banking in a proper manner will generate more lift. This project intends to apply these properties to the Forever Flight aircraft to achieve a longer flight time when searching for wildfires.
 
+\subsection{Methods}
+\subsubsection{Choice of Aircraft Frame}
+For our UAV, the team decided to go with a glider style aircraft over a delta-wing style. We originally wanted to use a delta-wing because they are quick to build and durable. However, we learned that these characteristics should not be our main focus because they define what someone would want if they were going to crash a lot! Since we were creating a plane intended to fly forever, we realized that we should choose an efficient-flying plane that can use less power to remain in the air. We wanted a plane that can utilize updrafts or thermals to recharge its battery when running low, or to simply gain altitude free of charge. Therefore, a glider was an obvious choice.
+\subsubsection{Tasks to Connect the Electronics}
+The first step in connecting the control system is to verify that all electronics are working properly before inserting them into the plane. This involves testing the servos and motor in a simple RC configuration without any autopilot, then connecting them to the autopilot and ensuring manual control can be taken with the flip of a switch, and finally integrating the wireless data transmission system.
+\subsubsection{Simple RC Configuration}
+Before motors and servos can be tested, the Taranis X9D RC transmitter must be bound to the FrSky X8R receiver so the two can communicate.
+\begin{enumerate}
+\item With the X9D off, hold down the F/S button on the receiver and power it up. Then let go of the F/S button. The light on the receiver should be solid RED indicating it is in bind mode.
+\item Turn the X9D on and select the model you want to bind the receiver to.
+\item Short press the menu button, and then press the page button to navigate to page 2 of the settings.
+\item Scroll down with the `+' or `-' buttons until you see ``Channel Range" and ``Receiver No." settings.
+\item Under ``Receiver No.", highlight [bind] and press ``ENT" to confirm. Leave the ``Channel Range" as 1-8 with telemetry ON. Press ``ENT" again.
+\item The receiver's LED will flash GREEN and RED, and the transmitter will beep, indicating that they are binding.
+\item After a couple beeps, press ``EXIT" on the transmitter and power off the receiver.
+\item Power the receiver back on. The LED should turn solid GREEN after a few seconds indicating that it is connected to the transmitter. The two are now paired together under the selected model forever unless the receiver is re-bound to a different model.
+\end{enumerate}
+
+With that done, servos and motors can be controlled by plugging them into the outputs on the X8R. Power everything off and plug the ESC and four servos into the receiver (see Table \ref{x8rChannels}). Note that the two aileron servos are connected to only one channel using a servo Y-splitter. This causes the servos to behave opposite of one another as they would on any aircraft. The motor connects to the ESC via three wires with bullet connectors (see Figure \ref{motorToEsc}).
+\begin{table}[h!]
+\caption{FrSky X8R Channels to Aircraft Control Surfaces}
+\centering
+\begin{tabular}{|c|c|}
+\hline
+X8R Channel & Aircraft Control Surface \\
+\hline
+1 & Ailerons \\
+\hline
+2 & Elevator \\
+\hline
+3 & Motor \\
+\hline
+4 & Rudder\\
+\hline
+\end{tabular}
+\label{x8rChannels}
+\end{table}
+
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3in]{motorToEsc.jpg}
+\caption{Brushless motor connected to ESC via bullet connectors found it \cite{mToE}}
+\label{motorToEsc}
+\end{figure}
+Now that everything is connected, follow these steps to center servos and test servo/motor functionality.
+
+\begin{enumerate}
+\item Ensure the propellers is OFF of the motor shaft, and the transmitter is powered off.
+\item Turn on the transmitter.
+	\begin{enumerate}
+	\item Ensure all switches are in default position and throttle position is at its minimum (default settings on the X9D will cause it to yell at you if these constraints are not met).
+	\end{enumerate}
+\item Plug the battery into the ESC.
+	\begin{enumerate}
+	\item The servos will center right when they receive power for the first time. Make sure that the trim on all channels is centered.
+	\end{enumerate}
+\item Wait for the motor startup sound sequence to play.
+\item Move sticks on the transmitter and observe control behavior.
+	\begin{enumerate}
+	\item Note that servo direction can be flipped in the transmitter settings, so their directions are not too important at this point.
+	\item If the motor spins in the wrong direction when the throttle is applied, switch any two of the three wires that connect it to the ESC.
+	\end{enumerate}
+\end{enumerate}
+
+In this stage, it is also wise to manually calibrate the ESC so it recognizes this specific transmitter's maximum and minimum PWM throttle outputs. Follow the steps below.
+
+\begin{enumerate}
+\item Ensure the propellers is OFF of the motor shaft, and the transmitter is powered off.
+\item Place the throttle stick to its maximum position.
+\item Plug the battery into the ESC.
+	\begin{enumerate}
+	\item It will play a special sequence to indicate that maximum throttle has been detected.
+	\end{enumerate}
+\item Place the throttle stick to its minimum position within 2 seconds.
+	\begin{enumerate}
+	\item The ESC will beep and play its normal startup sequence.
+	\item If the normal startup sequence does not play and instead the ESC beeps abnormally, repeat this process and be sure to move the throttle stick to the minimum position within 2 seconds!
+	\end{enumerate}
+\item Calibration is now complete.
+\end{enumerate}
+
+With these steps complete, we can move to connecting the motors, servos, and receiver to the flight controller.
+
+\subsubsection{Connect Motors, Servos, and Receiver to Pixhawk}
+Refer to Figure \ref{mainScheme} for the wiring diagram of all the electronics connected to the flight controller. Note that a special cable is required to connect the signal port of the LiPo Cell Voltage Monitor to the TELEM1 port on the Pixhawk. This can be purchased from Craft and Theory, or one can be made using an RS232 converter. We decided to buy the \$15 connector. Also observe that although not intuitive, the Pixhawk's IO PWM Out is connected to the PMB's FMU PWM In. This is to map the RC outputs to the FMU header pins rather than to the M1-8 solder pads. This is not described very well in the Pixhawk's quickstart guide!
+
+With all components connected, the first step is to run through Mission Planner's setup wizard. This involves calibrating sensors on the Pixhawk, flashing it with the latest firmware, choosing the battery sensor module, and configuring the Taranis X9D so Mission Planner recognizes its PWM outputs. If incorrect PWM values are observed, or they do not change with stick movements, navigate to ``Initial Setup" $\rightarrow$ ``Servo Output". Then change each channel function from throttle, ailerons, elevator, and rudder to their respective RCINx channels as defined in Table \ref{x8rChannels}.
+
+The next step is to configure the flight modes in mission planner so switches on the X9D can cycle through different modes. If the preconfigured Flight Deck model is used (described in the next section), RC channel 5 will be mapped to switches SD and SC. Play with these to set the preferred flight mode selections. With everything powered on, when one of those switches is flicked, one can see the flight mode change from gray to green in Mission Planner. Now when in MANUAL or STABILIZE mode, and the flight controller armed (1 second press on the GPS safety switch), the X9D should have full control of the motor and servos!
+
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=4in]{hardwareBlockDiagram.png}
+\caption{Diagram of all electronics in the aircraft.}
+\label{mainScheme}
+\end{figure}
+
+\subsubsection{Flash Taranis X9D with FlightDeck Software}
+The FlighDeck software from Craft and Theory can serve as a backup ground station directly on the transmitter. It provides everything necessary to fly the aircraft such as heading, altitude, battery voltage, and attitude. Follow the steps below to flash FlighDeck onto the transmitter after purchasing it from Craft and Theory. Note that a 40\% discount is given on FlightDeck when it is purchased together with the TELEM cable described in the section above.
+\begin{enumerate}
+\item Download OpenTx Companion \href{https://www.open-tx.org}{here}.
+	\begin{enumerate}
+	\item Run the companion executable.
+	\item Select radio type `FrSky Taranis X9D+' (or a different radio that is being used).
+	\item Check the `lua' box and ensure the `sql5font' box is unchecked.
+	\end{enumerate}
+\item Download latest firmware version.
+	\begin{enumerate}
+	\item We used this one \href{https://www.open-tx.org/2019/01/06/opentx-2.2.3}{here}.
+	\end{enumerate}
+\item Put Taranis in bootloader mode by holding both horizontal trims inward and powering on.
+\item Connect Taranis to computer with mini-USB cable.
+\item Flash firmware to radio using OpenTx Companion's handy user interface.
+\item Navigate to SD card drive on the computer that the Taranis is plugged into. It is drive E:\textbackslash on my laptop. It contains folder such ad LOGS, MODELS, and SOUNDS.
+\item Copy all of these files and back them up in a safe location.
+\item Download the latest SD card version \href{https://downloads.open-tx.org/2.2/sdcard/opentx-x9d%2B/}{here}. % note the first % does not make a comment
+\item Extract the contents of the .zip folder into the root directory of the SD card (in my case, drive E:\textbackslash).
+\item Download FlightDeck.zip from the email confirmation when it was bought or from the Craft and Theory account created for the purchase.
+\item Extract the contents of the ``SDcard" folder directly into the root directory of the Taranis SD card (in my case, drive E:\textbackslash).
+	\begin{enumerate}
+	\item Make sure to merge the contents of these folders and replace/overwrite any file already on the SD card.
+	\end{enumerate}
+\item Manually backup all models currently on the X9D to its SD card before proceeding to avoid any potential frustration.
+	\begin{enumerate}
+	\item Long press `Enter' over each model and select `Backup'.
+	\end{enumerate}
+\item Add the preconfigured FlightDeck model to the transmitter using OpenTx Companion.
+	\begin{enumerate}
+	\item Open the X9D+.otx file that came with FlightDeck in OpenTx Companion.
+	\item Press the ``Write Models and Settings to Radio" button.
+	\end{enumerate}
+\item Unplug the USB cable from the Taranis, select `Exit', and confirm. The radio will now boot up normally.
+\item Discover new sensors!
+	\begin{enumerate}
+	\item In Mission Planner, navigate to the full parameter list and set ``SERIAL1" = 10 for FrSky SPORT Passthrough, OpenTx.
+	\item Disconnect from Mission Planner and unplug the micro USB cable.
+	\item Power the electronics with a battery and wait for the Pixhawk startup sequence to play.
+	\item Navigate to the Telemetry screen on the X9D and select the ``discover new sensors" button.
+	\item Notice that GPS and CELS (battery lowest cell voltage), amongst others are now available.
+	\end{enumerate}
+\end{enumerate}
+
 \subsection{Conclusion}
 Controlling an aircraft autonomously is no easy task. There is a lot of math and research that goes into it. Thankfully, many educated enthusiasts have summed up the fundamentals to help novices learn and contribute to the latest technology. By now, some of the important aspects of aircraft control, aircraft design, and flight extension have been discussed to introduce beginners to the art of UAVs. THIS COULD USE SOME MORE ADDED
 
@@ -261,6 +412,9 @@ C. Dillon, "Physicists Train Robotic Gliders to Soar like Birds", Ucsdnews.ucsd.
 
 \bibitem{GliderBirds}
 G. Reddy, J. Wong-Ng, A. Celani, T. Sejnowski and M. Vergassola, "Glider soaring via reinforcement learning in the field", Nature, vol. 562, no. 7726, 2018. Available: 10.1038/s41586-018-0533-0.
+
+\bibitem{mToE}
+``Motor to ESC," Instructables. [Online]. Available: https://cdn.instructables.com/FDE/6G33/HLPSAYKP/FDE6G33HLPSAYKP.LARGE.jpg [Accessed: 07-March-2018].
 
 \bibitem{U-A-D}
 Sadraey, M. (n.d.). Unmanned aircraft design.
