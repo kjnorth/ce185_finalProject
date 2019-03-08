@@ -66,14 +66,14 @@ This autopilot is written in C++, and has a relatively small code base for the A
 The majority of the meat for the ArduPlane module is contained in the libraries. The programmers for ArduPilot wisely chose to combine the largesse of the code in libraries which all different vehicle versions that run ArduPilot (ArduPlane, ArduSub, ArduTractor, etc.) use. These libraries contain code for sending MAVLink that can be used between vehicles, hardware abstraction layers, control systems, and plenty more. 
 \subsubsection{Telemetry Module}
 The team landed on using the 3DR Radio Telemetry Kit. This set of transmitters and receivers use the frequency 916MHz. The flight controller uses this link to send flight data. The ground station sends GPS coordinates for the plane to track to on over this link as well. A picture of this module is below.
-% MAX PICTURE 2
-%\begin{figure}[h!]
-%\hspace*{0cm}
-%\centering
-%\includegraphics[width=3in]{MavlinkStructure.png}
-%\caption{Max B1}
-%\label{mavStruct}
-%\end{figure}
+ MAX PICTURE 2
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3in]{telemmodule.jpg}
+\caption{Max B1}
+\label{mavStruct}
+\end{figure}
 
 \section{Results and Discussion}
 This section of the paper will be about the overall set up of the system, the design process, and the problems that were encountered on the way.
