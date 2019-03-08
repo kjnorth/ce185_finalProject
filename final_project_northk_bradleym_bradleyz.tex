@@ -1,0 +1,147 @@
+\documentclass[12pt,journal,compsoc]{IEEEtran}
+
+\usepackage{graphicx}
+
+\begin{document}
+
+\title{Controlling a Small Aircraft Autnomously}
+\author{Kodiak~North}
+
+\date{\today}		% leaving the brackets empty omits the date
+% To input the current date, you can type: \date{\today}
+
+% The paper headers
+\markboth{Guide to Small UAV's}%
+{North \MakeLowercase{\textit{et al.}}: CMPE185}
+% The only time the second header will appear is for the odd numbered pages
+% after the title page when using the twoside option.
+% 
+% *** Note that you probably will NOT want to include the author's ***
+% *** name in the headers of peer review papers.                   ***
+% You can use \ifCLASSOPTIONpeerreview for conditional compilation here if
+% you desire.
+
+\IEEEpubid{0000--0000/00\$00.00~\copyright~2007 IEEE}
+
+\IEEEcompsoctitleabstractindextext{%
+\begin{abstract}
+%\boldmath
+The purpose of this document is to teach someone the basics of EDIT THIS BRO. Readers will be able to insert tables, figures, mathematical formulas, bibliographies, and references by the end of the tutorial.
+\end{abstract}
+% IEEEtran.cls defaults to using nonbold math in the Abstract.
+% This preserves the distinction between vectors and scalars. However,
+% if the journal you are submitting to favors bold math in the abstract,
+% then you can use LaTeX's standard command \boldmath at the very start
+% of the abstract to achieve this. Many IEEE journals frown on math
+% in the abstract anyway. In particular, the Computer Society does
+% not want either math or citations to appear in the abstract.
+
+% Note that keywords are not normally used for peerreview papers.
+\begin{IEEEkeywords}
+Aircraft, Airplane, RC Airplane, UAV, Autonomous, Wildfire, Wildfire Detection, Search and Rescue
+\end{IEEEkeywords}}
+
+\maketitle
+
+\tableofcontents 
+
+\section{Introduction}
+
+\IEEEPARstart{T}{his} document contains information on using basic \LaTeX\ commands. It will be useful for those just learning the wonderful language, or to anyone looking for a quick reference guide. This tool is great for a lot of applications, but it is a must have for anyone writing long mathematical equations in their reports. Starting with simple syntax, readers will learn about the most common commands and reserved characters. Creating custom data tables will be covered next. Then, readers will learn about figures; specifically what package is needed to insert them and the syntax necessary to compile images into the document. Moving on to math mode, readers will be exposed to the difference between in-line and regular display equations. Fractions, integrals, summations and simple tricks will also be covered in the math mode section. Lastly, the document will cover creating a bibliography section and references section. With all of this information, readers will be able to create \LaTeX\ documents to generate their own PDFs.
+
+\section{Summary of Autonomous Aircraft}
+Autonomous airplanes are used for a multitude of purposes. Many systems are pilot-assistive like in fighter jets. These jets are so naturally unstable that they pilot needs a computer's assistance to keep himself in the sky. Note that the computer cannot fly the plane alone; it needs a pilot's help. A more autonomous system is implemented in today's commercial airliners. These can be put into ``autopilot" mode to fly to a destination without any help from a pilot, however they cannot take off or land alone which is why we still have pilots greeting us as we board airplanes. The pilots take off and land the plane, and are their in case anything malfunctions, but commercial airliners are mainly flown by a computer. Lastly comes fully autonomous unmanned air vehicles, or UAV's for short. These planes fly totally alone, including autonomous take offs and landings. Usually flight paths are pre-programmed before a UAV takes off, it follows the path, and then returns to home. UAV's are used for recon purposes, defense systems, aerial mapping, weather sensors and likely many more. This paper is focusing on building a UAV to search for wildfires, but it will not take off or land autonomously. A pilot will remotely launch and land the device.
+
+\section{Designing an Autonomous Aircraft}
+\subsection{Summary}
+There are many different variables to take into account when creating an autonomously flying vehicle. The very first should be its purpose. Does the plane need to be extremely durable? Does it need to fly efficiently; using as little power as necessary? Is it a stealth vehicle? What maximum speed is desired? All of these questions will help develop aircraft body. Delta-wing planes are quite fast and durable, but they do not fly efficiently. Gliders fly extremely efficiently, but they are big and slow. Take the body into careful consideration becuase it is, in fact the entire plane!
+\subsection{Team Decision}
+For our UAV, the team decided to go with a glider style aircraft over a delta-wing style. We originally wanted to use a delta-wing becuase they are quick to build and durable. However, we learned that these characteristics should not be our main focus because they define what someone would want if they were going to crash a lot! Since we were creating a plane intended to fly forever, we realized that we should choose an efficient-flying plane that can use less power to remain in the air. We wanted a plane that can utilize updrafts or thermals to recharge its battery when running low, or to simply gain altitude free of charge. Therefore, a glider was an obvious choice.
+
+\section{Choosing a Flight Controller}
+The flight controller is the brain of the entire operation. If it has a problem, the plane could very well hit the ground at a high speed and blow up. It might not explode like it would in a movie, but it will definitely be in tons of pieces.
+
+\section{Connecting Electronics}
+
+\section{Wireless Data Transmission}
+
+\section{Flying}
+
+
+\section{Conclusion}
+\LaTeX\ is a very useful tool for generating professional PDF documents. Its equation editor makes it simple to add lengthy mathematical equations in a short amount of time, and allows for images to be inserted and BRU NEEDS AN EDIT. There is a learning curve to the language, but hopefully by now readers are familiar with the basic commands and terminology. Thanks to the World Wide Web, tutorials and forums are available in seconds to help learn any advanced \LaTeX\ commands. Thanks for reading!
+
+\appendices
+\section*{Appendix}
+A large list of \LaTeX math symbols can be found in \cite{Symbols}.
+
+\section*{Acknowledgements}
+The author would like to thank Professor Gerald Moulds for EDIT EDIT EDITEDIT such a detailed and useful tutorial for learning the language. He would also like to thank anyone on the \LaTeX\ forums who has helped others learn this amazing tool.
+
+\begin{thebibliography}{1}
+
+\bibitem{Symbols}
+Carlisle, D. (2019). \emph{Latex Math Symbols}. [online] Web.ift.uib.no Available at: 
+http://web.ift.uib.no/Teori/KURS/WRK/TeX/symALL.html [Accessed 22 Jan. 2019].
+
+\bibitem{DragonImage}
+Dragon Representation Found In Dungeons and Dragons. (2019). [image]\\
+Available at: https://en.wikipedia.org/wiki/Dragon\#/media/File:DnD\_Dragon.png [Accessed 22 Jan. 2019].
+
+\bibitem{Tables}
+Roberts, A. (2011). \emph{Tables - Getting to grips with LaTeX - Andrew Roberts}. [online] \hskip 1em plus
+0.5em minus 0.4em\relax Andy-roberts.net. Available at: https://www.andy-roberts.net/writing/latex/tables [Accessed 22 Jan. 2019].
+
+\end{thebibliography}
+
+% Note that IEEE does not put floats in the very first column - or typically
+% anywhere on the first page for that matter. Also, in-text middle ("here")
+% positioning is not used. Most IEEE journals use top floats exclusively.
+% However, Computer Society journals sometimes do use bottom floats - bear
+% this in mind when choosing appropriate optional arguments for the
+% figure/table environments.
+% Note that, LaTeX2e, unlike IEEE journals, places footnotes above bottom
+% floats. This can be corrected via the \fnbelowfloat command of the
+% stfloats package.
+
+%----- Optional: BIOGRAPHY Section ---------------------------------------------------------------
+ 
+% If you have an EPS/PDF photo (graphicx package needed) extra braces are
+% needed around the contents of the optional argument to biography to prevent
+% the LaTeX parser from getting confused when it sees the complicated
+% \includegraphics command within an optional argument. (You could create
+% your own custom macro containing the \includegraphics command to make things
+% simpler here.)
+%\begin{biography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{mshell}}]{Gerald Moulds}
+% or if you just want to reserve a space for a photo:
+
+%\begin{IEEEbiography}{Gerald Moulds}
+%Biography text here.
+%\end{IEEEbiography}
+
+% if you will not have a photo at all:
+\begin{IEEEbiographynophoto}{Kodiak North}
+is currently a senior at the University of California - Santa Cruz. He is majoring in Robotics Engineering, and looking for a career in the new drone industry once he graduates. On his free time, Kodiak enjoys surfing, repairing his truck, and flying his RC race quadcopter.
+\end{IEEEbiographynophoto}
+
+% insert where needed to balance the two columns on the last page with
+% biographies
+%\newpage
+
+%\begin{IEEEbiographynophoto}{Jane Doe}
+%Biography text here.
+%\end{IEEEbiographynophoto}
+
+% You can push biographies down or up by placing
+% a \vfill before or after them. The appropriate
+% use of \vfill depends on what kind of text is
+% on the last page and whether or not the columns
+% are being equalized.
+
+%\vfill
+
+% Can be used to pull up biographies so that the bottom of the last one
+% is flush with the other column.
+%\enlargethispage{-5in}
+
+\end{document}
