@@ -4,39 +4,22 @@
 
 \begin{document}
 
-\title{Controlling a Small Aircraft Autnomously}
-\author{Kodiak~North}
+\title{Data transfer, Control Systems, and Sensors\\
+	CMPE 185 Final Project}
+\author{Maxwell~Bradley, Kodiak~North, and Zane~Bradley}
 
-\date{\today}		% leaving the brackets empty omits the date
+\date{\today} % leaving the brackets empty omits the date
 % To input the current date, you can type: \date{\today}
 
 % The paper headers
-\markboth{Guide to Small UAV's}%
-{North \MakeLowercase{\textit{et al.}}: CMPE185}
-% The only time the second header will appear is for the odd numbered pages
-% after the title page when using the twoside option.
-% 
-% *** Note that you probably will NOT want to include the author's ***
-% *** name in the headers of peer review papers.                   ***
-% You can use \ifCLASSOPTIONpeerreview for conditional compilation here if
-% you desire.
-
-\IEEEpubid{0000--0000/00\$00.00~\copyright~2007 IEEE}
+\markboth{Data transfer, Control Systems, and Sensors}%
+{Bradley, M; North, K; Bradley, Z\MakeLowercase{\textit{et al.}}: CMPE185}
 
 \IEEEcompsoctitleabstractindextext{%
 \begin{abstract}
-%\boldmath
 The purpose of this document is to teach someone the basics of EDIT THIS BRO. Readers will be able to insert tables, figures, mathematical formulas, bibliographies, and references by the end of the tutorial.
 \end{abstract}
-% IEEEtran.cls defaults to using nonbold math in the Abstract.
-% This preserves the distinction between vectors and scalars. However,
-% if the journal you are submitting to favors bold math in the abstract,
-% then you can use LaTeX's standard command \boldmath at the very start
-% of the abstract to achieve this. Many IEEE journals frown on math
-% in the abstract anyway. In particular, the Computer Society does
-% not want either math or citations to appear in the abstract.
 
-% Note that keywords are not normally used for peerreview papers.
 \begin{IEEEkeywords}
 Aircraft, Airplane, RC Airplane, UAV, Autonomous, Wildfire, Wildfire Detection, Search and Rescue
 \end{IEEEkeywords}}
@@ -45,27 +28,64 @@ Aircraft, Airplane, RC Airplane, UAV, Autonomous, Wildfire, Wildfire Detection, 
 
 \tableofcontents 
 
-\section{Introduction}
+\section{Project Introduction}
 
-\IEEEPARstart{T}{his} document contains information on using basic \LaTeX\ commands. It will be useful for those just learning the wonderful language, or to anyone looking for a quick reference guide. This tool is great for a lot of applications, but it is a must have for anyone writing long mathematical equations in their reports. Starting with simple syntax, readers will learn about the most common commands and reserved characters. Creating custom data tables will be covered next. Then, readers will learn about figures; specifically what package is needed to insert them and the syntax necessary to compile images into the document. Moving on to math mode, readers will be exposed to the difference between in-line and regular display equations. Fractions, integrals, summations and simple tricks will also be covered in the math mode section. Lastly, the document will cover creating a bibliography section and references section. With all of this information, readers will be able to create \LaTeX\ documents to generate their own PDFs.
+\IEEEPARstart{F}{orever} Flight is a persistent aerial monitoring system to detect wildfires in fire-prone areas. It will consist of a plane with a mounted IR camera to detect fires below and a flight controller capable of autopilot, guidable with GPS waypoints sent from a laptop computer on the ground. This project was named ‘Forever Flight’ for its goal of never having to recharge its batteries, staying aloft and performing fire detection while the sun is up, charging back up from solar energy and our power regenerative mechanisms. 
 
-\section{Summary of Autonomous Aircraft}
-Autonomous airplanes are used for a multitude of purposes. Many systems are pilot-assistive like in fighter jets. These jets are so naturally unstable that they pilot needs a computer's assistance to keep himself in the sky. Note that the computer cannot fly the plane alone; it needs a pilot's help. A more autonomous system is implemented in today's commercial airliners. These can be put into ``autopilot" mode to fly to a destination without any help from a pilot, however they cannot take off or land alone which is why we still have pilots greeting us as we board airplanes. The pilots take off and land the plane, and are their in case anything malfunctions, but commercial airliners are mainly flown by a computer. Lastly comes fully autonomous unmanned air vehicles, or UAV's for short. These planes fly totally alone, including autonomous take offs and landings. Usually flight paths are pre-programmed before a UAV takes off, it follows the path, and then returns to home. UAV's are used for recon purposes, defense systems, aerial mapping, weather sensors and likely many more. This paper is focusing on building a UAV to search for wildfires, but it will not take off or land autonomously. A pilot will remotely launch and land the device.
+This project was inspired by the recent California wildfires like the Camp Fire, a 2018 fire in Northern California that caused \$16.5 billion in damage and claimed 86 lives [1]. The reason that these fires were so deadly is because there was no early warning system that detected the fire before it started ripping through towns like Paradise, California. The team hopes that Forever Flight will prevent fires like this.
 
-\section{Designing an Autonomous Aircraft}
-\subsection{Summary}
-There are many different variables to take into account when creating an autonomously flying vehicle. The very first should be its purpose. Does the plane need to be extremely durable? Does it need to fly efficiently; using as little power as necessary? Is it a stealth vehicle? What maximum speed is desired? All of these questions will help develop aircraft body. Delta-wing planes are quite fast and durable, but they do not fly efficiently. Gliders fly extremely efficiently, but they are big and slow. Take the body into careful consideration becuase it is, in fact the entire plane!
-\subsection{Team Decision}
-For our UAV, the team decided to go with a glider style aircraft over a delta-wing style. We originally wanted to use a delta-wing becuase they are quick to build and durable. However, we learned that these characteristics should not be our main focus because they define what someone would want if they were going to crash a lot! Since we were creating a plane intended to fly forever, we realized that we should choose an efficient-flying plane that can use less power to remain in the air. We wanted a plane that can utilize updrafts or thermals to recharge its battery when running low, or to simply gain altitude free of charge. Therefore, a glider was an obvious choice.
+\section{Data Transfer}
+\subsection{Introduction}
+An important part of this project is the data transfer from the plane to the ground station. This transfer contains a huge amount of different kinds of data, such as fire detection stats, fire detection processing, GPS coordinates, and more. Getting this kind of information out of the plane can be challenging because of the flight controller’s running overhead and varying transmission protocol versions. This section of the paper will talk about the communication of data between the in-flight aircraft and the ground control station read by our product user.
 
-\section{Choosing a Flight Controller}
-The flight controller is the brain of the entire operation. If it has a problem, the plane could very well hit the ground at a high speed and blow up. It might not explode like it would in a movie, but it will definitely be in tons of pieces.
+\subsection{Materials and MAterial Background}
+A multitude of different components make up the data transmission path between the plane itself and the ground station. Each of those parts will now be discussed in detail.
+\subsubsection{Pixhawk Flight Controller}
+The Pixhawk flight controller is the main brain of the entire plane. It receives IR information from the IR sensor mounted downwards pointing at the ground through a serial communication port (using the I2C protocol). The Pixhawk is where the majority of the data transfer work occurs in the second version of the data transmission design. It uses an overall system scheduler to decide when to send MAVLink packets to the ground station. Within the function that is scheduled in the overall scheduler, a smaller MAVLink scheduler exists. Within the MAVLink scheduler, one of a large group of packets is selected and sent over whatever telemetry port MAVLink is configured to use.
+\subsubsection{MAVLink}
+MAVLink is a protocol commonly used between drones and ground stations. Most autopilots use MAVLink to both send and receive packets to and from the ground station, respectively. Its packet structure is described in the following picture.
+% MAX PICTURE 1
+The start frame transmission is the hex character set 0xFE, which tells the ground station that the packet is incoming. The next byte tells the receiver how many bytes in the payload to expect. The next set of bytes are for identifying the system sending the message, the component sending the message, and the packet sequence.
 
-\section{Connecting Electronics}
+The most important part of this packet is the message id, the 5th byte in the index. This byte signals which MAVLink message the incoming data corresponds to. MAVLink messages are defined in a file called common.xml. Every message coming in indexes to one of the messages in the common.xml file. For instance, several times a second a ‘heartbeat’ message is sent from the plane to the ground station. This message is declared in the common.xml file as having ID 0. When the ground station receives this message, it reads that xml file, looking for a message definition that matches the incoming ID. When it finds it, it interprets the payload attached to the MAVLink message as the attributes associated with the message definition in the xml file. 
+The autopilot that was chosen for this project uses the MAVLink protocol to communicate with the ground station. As a result, the team has become very familiar with its function. 
+\subsubsection{ArduPilot}
+After looking at all the free and open source autopilots out there on the market, Ardupilot, an open source autopilot that runs on the Pixhawk4, was selected. This firmware can be run on a variety of different platforms: there is an ArduSub, an ArduCopter, an ArduTractor, and obviously an ArduPlane. The flight controller for this project uses the ArduPlane version. 
 
-\section{Wireless Data Transmission}
+This autopilot is written in C++, and has a relatively small code base for the ArduPlane itself. It’s most important parts consist of a main plane scheduler, a MAVLink sending module, and a huge header file that includes all the important modules from the libraries and from the plane folder itself. 
 
-\section{Flying}
+The majority of the meat for the ArduPlane module is contained in the libraries. The programmers for ArduPilot wisely chose to combine the largesse of the code in libraries which all different vehicle versions that run ArduPilot (ArduPlane, ArduSub, ArduTractor, etc.) use. These libraries contain code for sending MAVLink that can be used between vehicles, hardware abstraction layers, control systems, and plenty more. 
+\subsubsection{Telemetry Module}
+The team landed on using the 3DR Radio Telemetry Kit. This set of transmitters and receivers use the frequency 916MHz. The flight controller uses this link to send flight data. The ground station sends GPS coordinates for the plane to track to on over this link as well. A picture of this module is below.
+% MAX PICTURE 2
+
+\section{Results and Discussion}
+This section of the paper will be about the overall set up of the system, the design process, and the problems that were encountered on the way.
+\subsubsection{System Set Up}
+Our data transmission system starts in the Pixhawk scheduler code in the main file called ArduPlane.cpp. The flight controller is essentially a microcontroller without an operating system, which means that it needs to implement a scheduling system that figures out which process of the hundreds of processes competing for the processor to run. This is what the scheduler looks like in code:
+% MAX PICTURE 3
+The highlighted line of code schedules the GCS sending module, which calls functions to use the MAVLink link between the ground station and the plane. Diving deeper into the code base in the plane folder, there is the GCS\_MAVLink.cpp file that contains the functions to actually go about sending the message. This is where changes started:
+% MAX PICTURE 4
+As a backup to the above function, ArduPilot also implemented a function that all vehicles under the ArduPilot umbrella use. If none of the IDs passed into the try\_send\_message function matched, it would fall into the try\_send\_message that was defined in the libraries of ArduPilot.  This was good for overall project structuring, but made finding the actual implementation of MAVLink sending very challenging. 
+
+Below is the fallback function at the end of the previous function that links the plane implementation to the common MAVLink packets that all ArduPilot vehicles use. This function is contained in the library files that all ArduPilot vehicles contain. 
+% MAX PICTURE 5
+By editing code in either the library function or the ArduPlane specific function, it was possible to make changes to the MAVLink messages that were being sent to the ground station. 
+Changes were made to existing MAVLink definitions rather than create new ones because of the difficulty in changing the MAVLink protocol version from version 1.0 to version 2.0 (please view the problems section for more information on this issue). To edit MAVLink message definitions, changes needed to be made in the common.xml or ardupilotmega.xml files.
+\subsubsection{Design Process}
+The design process was begun by trying to prevent the flight controller from having to handle any of the data transmission at all. Instead, the original plan was to have a Teensy microcontroller serve as the gateway between the ground station on the ground and the plane up in the sky. The first thing that was done was to set up a UART link between the Teensy and the flight controller, sending over information that would eventually be relayed to the ground station. The overall structure looked like this:
+% MAX PICTURE 6
+
+However, this set up became less than optimal when the incredible wealth of the already existing ground control software became apparent. It was discovered that the ground station software, Mission Planner, could be used to send GPS waypoints to the plane which it would then track to. The interface between the flight controller and the ground control station would only work if it could receive bytes from the ground station, and only allowing the Teensy access to the ground station would prevent this huge benefit from being realized. 
+It didn’t make sense to spend a lot of time designing a system where the Teensy read in fire detection data forwarded them to the flight controller. In addition, the small and underpowered Teesny with a processor clocked at 48 MHz could not hope to keep up with a flight controller clocked at over 3 times that. The Teensy was then removed from the picture, replaced with a more overloaded flight controller. A diagram of the current set up is below.
+% MAX PICTURE 7
+
+After the flight controller became the center of data processing and transmission, the design process began anew. The first important thing to do was to get a good understanding all of the underlying code for data transmission in the ArduPilot framework. After tracking down the control flow through the different files which eventually ended in in the library file that all ArduPilot vehicles used, the next step was to add a particular message to the common.xml file which contained the MAVLink message definitions. 
+
+Due to a parameter problem that will be covered in-depth in the problems part of this discussion, it was necessary to overwrite one of the existing MAVLink definitions. The MAV\_CMD\_NAV\_LAND with ID 21 message was selected because the plane should never be allowed to land automatically This message was overwritten with a custom packet that contained fire detection data. This packet would only be sent when the sensing apparatus actually detected a fire, even though the message would be scheduled for sending at least once a second. The simple control flow of this setup is as follows.
+% MAX PICTURE 8
+
+For the ground station that would receive messages, a Python script that used the Python package PyMavlink’s submodule mavuti was used. This allowed a reading of the serial port and a parsing/translation of the incoming MAVLink message into human readable data. The associated data was then used to make plots, such as the following that plots latitude and longitude from the incoming GPS data packets.
 
 
 \section{Conclusion}
@@ -76,50 +96,27 @@ The flight controller is the brain of the entire operation. If it has a problem,
 A large list of \LaTeX math symbols can be found in \cite{Symbols}.
 
 \section*{Acknowledgements}
-The author would like to thank Professor Gerald Moulds for EDIT EDIT EDITEDIT such a detailed and useful tutorial for learning the language. He would also like to thank anyone on the \LaTeX\ forums who has helped others learn this amazing tool.
+Kodiak would like to thank the authors of Small Unmanned Aircraft, and Unmanned Aircraft Design for providing such detailed descriptions on UAV design and control. He would also like to thank all researchers that are apart of Glider soaring via reinforcement learning in the field (\cite{GliderBirds}) for conducting such excellent work that will contribute to his capstone project.
 
 \begin{thebibliography}{1}
+\bibitem{S-U-A}
+Beard, R. and McLain, T. (2012). Small unmanned aircraft. Princeton, N.J: Princeton University Press.
 
-\bibitem{Symbols}
-Carlisle, D. (2019). \emph{Latex Math Symbols}. [online] Web.ift.uib.no Available at: 
-http://web.ift.uib.no/Teori/KURS/WRK/TeX/symALL.html [Accessed 22 Jan. 2019].
+\bibitem{gbArticle}
+C. Dillon, "Physicists Train Robotic Gliders to Soar like Birds", Ucsdnews.ucsd.edu, 2018. [Online]. Available: https://ucsdnews.ucsd.edu/pressrelease/physicists-train-robotic-gliders-to-soar-like-birds. [Accessed: 20-Feb-2019].
 
-\bibitem{DragonImage}
-Dragon Representation Found In Dungeons and Dragons. (2019). [image]\\
-Available at: https://en.wikipedia.org/wiki/Dragon\#/media/File:DnD\_Dragon.png [Accessed 22 Jan. 2019].
+\bibitem{GliderBirds}
+G. Reddy, J. Wong-Ng, A. Celani, T. Sejnowski and M. Vergassola, "Glider soaring via reinforcement learning in the field", Nature, vol. 562, no. 7726, 2018. Available: 10.1038/s41586-018-0533-0.
 
-\bibitem{Tables}
-Roberts, A. (2011). \emph{Tables - Getting to grips with LaTeX - Andrew Roberts}. [online] \hskip 1em plus
-0.5em minus 0.4em\relax Andy-roberts.net. Available at: https://www.andy-roberts.net/writing/latex/tables [Accessed 22 Jan. 2019].
+\bibitem{U-A-D}
+Sadraey, M. (n.d.). Unmanned aircraft design.
 
 \end{thebibliography}
 
-% Note that IEEE does not put floats in the very first column - or typically
-% anywhere on the first page for that matter. Also, in-text middle ("here")
-% positioning is not used. Most IEEE journals use top floats exclusively.
-% However, Computer Society journals sometimes do use bottom floats - bear
-% this in mind when choosing appropriate optional arguments for the
-% figure/table environments.
-% Note that, LaTeX2e, unlike IEEE journals, places footnotes above bottom
-% floats. This can be corrected via the \fnbelowfloat command of the
-% stfloats package.
-
 %----- Optional: BIOGRAPHY Section ---------------------------------------------------------------
- 
-% If you have an EPS/PDF photo (graphicx package needed) extra braces are
-% needed around the contents of the optional argument to biography to prevent
-% the LaTeX parser from getting confused when it sees the complicated
-% \includegraphics command within an optional argument. (You could create
-% your own custom macro containing the \includegraphics command to make things
-% simpler here.)
-%\begin{biography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{mshell}}]{Gerald Moulds}
-% or if you just want to reserve a space for a photo:
-
-%\begin{IEEEbiography}{Gerald Moulds}
-%Biography text here.
-%\end{IEEEbiography}
 
 % if you will not have a photo at all:
+% Kodiak's amazing bio
 \begin{IEEEbiographynophoto}{Kodiak North}
 is currently a senior at the University of California - Santa Cruz. He is majoring in Robotics Engineering, and looking for a career in the new drone industry once he graduates. On his free time, Kodiak enjoys surfing, repairing his truck, and flying his RC race quadcopter.
 \end{IEEEbiographynophoto}
