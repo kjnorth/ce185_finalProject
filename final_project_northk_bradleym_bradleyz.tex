@@ -1,5 +1,6 @@
 \documentclass[12pt,journal,compsoc]{IEEEtran}
 
+\usepackage{amsmath}
 \usepackage{graphicx}
 
 \begin{document}
@@ -39,7 +40,7 @@ This project was inspired by the recent California wildfires like the Camp Fire,
 \subsection{Introduction}
 An important part of this project is the data transfer from the plane to the ground station. This transfer contains a huge amount of different kinds of data, such as fire detection stats, fire detection processing, GPS coordinates, and more. Getting this kind of information out of the plane can be challenging because of the flight controller's running overhead and varying transmission protocol versions. This section of the paper will talk about the communication of data between the in-flight aircraft and the ground control station read by our product user.
 
-\subsection{Materials and MAterial Background}
+\subsection{Materials and Material Background}
 A multitude of different components make up the data transmission path between the plane itself and the ground station. Each of those parts will now be discussed in detail.
 \subsubsection{Pixhawk Flight Controller}
 The Pixhawk flight controller is the main brain of the entire plane. It receives IR information from the IR sensor mounted downwards pointing at the ground through a serial communication port (using the I2C protocol). The Pixhawk is where the majority of the data transfer work occurs in the second version of the data transmission design. It uses an overall system scheduler to decide when to send MAVLink packets to the ground station. Within the function that is scheduled in the overall scheduler, a smaller MAVLink scheduler exists. Within the MAVLink scheduler, one of a large group of packets is selected and sent over whatever telemetry port MAVLink is configured to use.
@@ -163,17 +164,75 @@ The biggest and most enveloping design problem that was encountered during this 
 
 The changing of this protocol is badly documented on the ArduPilot website. Eventually, a manual change using the MAVProxy python library was attempted (specifically changing the protocol version parameter of the MAVLink version), but MAVLink 1 packets continued to be sent. In the interest of time, it was decided that simply overwriting the useless packets defined for MAVLink 1 was the best course of action.
 
-\section{Data Transfer Conclusion}
+\subsection{Data Transfer Conclusion}
 Data transmission software is essential to pulling real time data that closely reflects and explains the events that occured during flight. Even though the open source autopilot is incredibly difficult to parse through and overall not very well written by industry computer science standards, it can be manipulated to add custom MAVLink functionality. 
 
 An added problem of working with this flight controller is the time and processing constraints that adding a custom bit of functionality to an already extremely overtasked system come with. However, by keeping subroutines short, it was possible to add a good amount of data collecting and transmission software to an already built system.
 
+% Kodiak
 \section{Control System}
 \subsection{Introduction}
 The control systems section will explore the mysterious art of controlling planes without a pilot on-board. The overall plan is to control the aircraft in an optimal way to detect wildfires, but for now, we are just focused on control in general.
 
+\subsubsection{Treating the Aircraft as a Dubins Vehicle}
+All information in this section was found in \cite{S-U-A}, chapters 9 and 10. These chapters focus mainly on creating a model for guidance and path following. Using coordinate frame matrices to resemble flight, we can model aircraft dynamics along with outside forces with the following equation (eq 9.9 in \cite{S-U-A}):
+\[ \begin{pmatrix}
+\dot{p_n} \\
+\dot{p_e} \\
+\dot{h}
+\end{pmatrix}  
+= V_a \begin{pmatrix}
+cos(\psi) \\
+sin(\psi) \\
+0
+\end{pmatrix}
++ \begin{pmatrix}
+w_n \\
+w_e \\
+0
+\end{pmatrix}
+\]
+It essentially says that the angular roll rate $\dot{p}$, and the rate of change in altitude $\dot{h}$ are equivalent to the airspeed $V_a$ times the cosine and sine of the yaw angle $\psi$ plus the wind direction $w$. Note that aerodynamic forces acting on the aircraft body are removed from this equation to greatly simplify it. The equation assumes the aircraft maintains a steady altitude to model it like a dubins vehicle with a forward velocity and a turning rate. The airplane is then controlled by increasing or decreasing the veloticy and changing the turning rate. Below in Figure \ref{f8} is a plot of a dubins vehicle moving in a figure-eight pattern:
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3in]{dubins_fig8.jpg}
+\caption{Dubins vehicle programmed to move in a figure-eight pattern by holding a constant velocity and changing the sign of its turning rate at a specific time interval. An airplane at a constant forward velocity and altitude can be modeled in a similar fashion. Note this picture was taken from a project the author completed for CMPE 141.}
+\label{f8}
+\end{figure}
+This idea is particularly useful for Unmanned Aerial Vehicles (UAVs), which do not perform aerobatic maneuvers and usually maintain a steady altitude to scan an area. Engineers can basically pretend their UAV is a dubins vehicle once it reaches its cruising altitude! We can then relate the turning rate along the yaw axis $\dot{\psi}$ to gravity, velocity, and the roll angle $\phi$ with the following equation (eq 9.14 in \cite{S-U-A}):
+\[ \dot{\psi} = \frac{g}{V_a}tan(\phi) \]
+It is important because it gives us a direct relation from roll angle to yaw rate. This equation is similar to the steering wheel on a car - it is rolled left and right to make the car yaw left and right. In this case, the aircraft itself is the steering wheel rolling left and right to yaw back and forth. We now have everything we need to control a UAV like a dubins vehicle using the roll angle to modify turning rate, and the motor to adjust its speed.
+
+\subsubsection{Aircraft Ground Control Stations}
+All information in this section was found in \cite{U-A-D}, chapter 8. A ground control station is something that can apply the dubins vehicle model as the UAV is in the air. As an operator plans the flight, the ground control software will calculate the turning rate (i.e. roll angle) required to follow the path. If the turning rate is unachievable, the software must notify the operator, or perform longer, wider maneuvers to correct for the error and follow the path as close as possible. This is one of many reasons why ground station are important tools for a UAVs. Their other purposes are to allow an operator to track/plan the mission, observe flight status, and pilot the aircraft. ``Depending upon range and type of mission (complexity of the UAV system), smaller UAVs are controlled via visual contact (manual real-time control), while the larger ones are equipped with a communication system (engage stored on-board flight plans)" (Sadraey, page 141). Some UAVs are not fully autonomous, so an operator must fly it using a laptop with ground control software. UAVs also have various sensors on them like a weapon position sensor, altimeter, airspeed sensor, intertial measurement unit (IMU), and many more. If the ground control station operator notices anything is acting funny, he can take full control and act accordingly.
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3in]{groundControl.jpg}
+\caption{Diagram displaying and operator of a ground control station to pilot an aircraft. Most stations do not require the operator to sit in a cockpit-like seat, but the exaggeration is useful for a novice UAV enthusiast. This image was found in \cite{U-A-D}, page 142, Figure 8.1.}
+\label{gcDiagram}
+\end{figure}
+Normally, there are two operators to a ground control station; the vehicle flight operator and the mission payload operator. The flight operator is in charge of keeping the machine in the air, while the payload operator interfaces with other aircraft systems. This could be aiming and firing guns, taking weather data, or gathering recon information for teams on the ground. These operators play a crucial role because although the plane can fly mostly, or fully autonomously, ``most UAV losses are attributed to operator errors" (Sadraey, page 143). The operators must be comfortable when working with these expensive devices or else their state of mind will fatigue, and the chances of making a mistake increase. It is important to keep comfort in mind when desigining a ground control station.
+
+\subsubsection{Glider Soaring via Reinforcement Learning in the Field}
+All information in this section was found in \cite{GliderBirds}. One way to extend the flight time of a small, unmanned aircraft is to utilize thermals and updrafts similar to the way birds do. Physicists at UC San Diego figured out how to do exactly that by using reinforcement learning - a type of machine learning.
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3in]{gliderAndBird.jpg}
+\caption{Here is one of the gliders used in the testing process flying in tandem with a seagull. The two both have the same attitude to achieve the most lift out of the thermal or updraft they are flying through. This image was found in \cite{gbArticle}.}
+\label{gliderAndBird}
+\end{figure}
+Reinforcement learning is essentially a way for a system to learn based on trial and error; if it preforms an action and things go well, it remembers that as a good situation, while on the other hand, poor situations from bad maneuvers are kept in the ``don't do again" list. The physicists started by simulating gliders in turbulent wind flow to find important parameters that improve navigation through a thermal. They then moved on to testing a real plane with a 2 meter wingspan. The plane was equipped with a flight controller running modified ArduPlane code to pilot the aircraft through updrafts. Researchers soon discovered that they needed to write algorithms to estimate ``environmental cues" to maneuver the glider in such a way to gain the most lift out of the environment. For example, when a pocket of greater lift is at a diagonal to the aircraft's forward heading, banking in a proper manner will generate more lift. This project intends to apply these properties to the Forever Flight aircraft to achieve a longer flight time when searching for wildfires.
+
+\subsection{Conclusion}
+Controlling an aircraft autonomously is no easy task. There is a lot of math and research that goes into it. Thankfully, many educated enthusiasts have summed up the fundamentals to help novices learn and contribute to the latest technology. By now, some of the important aspects of aircraft control, aircraft design, and flight extension have been discussed to introduce beginners to the art of UAVs. THIS COULD USE SOME MORE ADDED
+
 \section{Project Conclusion}
 \LaTeX\ is a very useful tool for generating professional PDF documents. Its equation editor makes it simple to add lengthy mathematical equations in a short amount of time, and allows for images to be inserted and BRU NEEDS AN EDIT. There is a learning curve to the language, but hopefully by now readers are familiar with the basic commands and terminology. Thanks to the World Wide Web, tutorials and forums are available in seconds to help learn any advanced \LaTeX\ commands. Thanks for reading!
+
+% Zane B
 
 \appendices
 \section*{Appendix}
