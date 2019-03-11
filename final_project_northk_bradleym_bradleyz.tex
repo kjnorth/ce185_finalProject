@@ -52,20 +52,16 @@ An important part of this project is the data transfer from the plane to the gro
 
 \subsection{Materials and Material Background}
 A multitude of different components make up the data transmission path between the plane itself and the ground station. Each of those parts will now be discussed in detail.
+
 \subsubsection{Pixhawk Flight Controller}
 The Pixhawk flight controller is the main brain of the entire plane. It receives IR information from the IR sensor mounted downwards pointing at the ground through a serial communication port (using the I2C protocol). The Pixhawk is where the majority of the data transfer work occurs in the second version of the data transmission design. It uses an overall system scheduler to decide when to send MAVLink packets to the ground station. Within the function that is scheduled in the overall scheduler, a smaller MAVLink scheduler exists. Within the MAVLink scheduler, one of a large group of packets is selected and sent over whatever telemetry port MAVLink is configured to use.
+
 \subsubsection{MAVLink}
 MAVLink is a protocol commonly used between drones and ground stations. Most autopilots use MAVLink to both send and receive packets to and from the ground station, respectively. Its packet structure is described in the following picture.
 % MAX PICTURE 1
 
 \begin{table}[h!]
-\caption{Byte Level Layout of a MAVLink packet}
 \centering
-<<<<<<< HEAD
-\includegraphics[width=3in]{MavlinkStructure.png}
-\caption{MAVLink protocol v1.0 packet structure}
-\label{mavStruct}
-\end{figure}
 
 \begin{tabular}{|p{1.5cm}|p{0.9cm}|p{5cm}|}
 \hline
@@ -90,7 +86,6 @@ CRC & N+7 to N+8 & A 2 byte Cyclic Redundancy Check of the entire packet, to cat
 \end{tabular}
 \label{x8rChannels}
 \end{table}
->>>>>>> 4cce4a1599dd835b80c3a7e49b88b03309104e35
 
 The start frame transmission is the hex character set 0xFE, which tells the ground station that the packet is incoming. The next byte tells the receiver how many bytes in the payload to expect. The next set of bytes are for identifying the system sending the message, the component sending the message, and the packet sequence.
 
@@ -195,6 +190,8 @@ Due to a parameter problem that will be covered in-depth in the problems part of
 \end{figure}
 
 For the ground station that would receive messages, a Python script that used the Python package PyMavlink's submodule mavuti was used. This allowed a reading of the serial port and a parsing/translation of the incoming MAVLink message into human readable data. The associated data was then used to make plots, such as the following that plots latitude and longitude from the incoming GPS data packets.
+
+This allows for the collection of real time flight data which can be very different from the data read from a wind tunnel in the lab. 
 % MAX PICTURE 9
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -204,17 +201,16 @@ For the ground station that would receive messages, a Python script that used th
 \label{maidenFlightPlot}
 \end{figure}
 
-This allows for the collection of real time flight data which can be very different from the data read from a wind tunnel in the lab. 
 
 \subsubsection{Design Problems}
 The biggest and most enveloping design problem that was encountered during this project was changing the MAVLink protocol version. Please note the MAVLink byte structure referred to in the next few sentences is the first diagram of this section of the report. The 5th byte of the packet designates the ID number that corresponds to the MAVLink message. This limits the total number of incoming messages to 256. The common.xml file contains message definitions up to 256. Due to the limited number of bits (8) that correspond to the incoming ID, there are only 256 possible messages that can be sent. This is why overwriting the already defined messages in the common.xml file is needed. Creating new messages with an ID value greater than 255 would not be able to be sent by the current MAVLink protocol. Originally, a custom packet with an ID value of 11065 was created and the sending function for that specific packet was called. However, nothing was sent, not even garbage. This along with the packet header of 0xFE made it very clear that the first version of the MAVLink protocol was being used rather than the updated and more flexible MAVLink version 2. Overwriting the message was a necessary evil to send custom packets unfortunately. 
 
 The changing of this protocol is badly documented on the ArduPilot website. Eventually, a manual change using the MAVProxy python library was attempted (specifically changing the protocol version parameter of the MAVLink version), but MAVLink 1 packets continued to be sent. In the interest of time, it was decided that simply overwriting the useless packets defined for MAVLink 1 was the best course of action.
 
-\subsection{Data Transfer Conclusion}
-Data transmission software is essential to pulling real time data that closely reflects and explains the events that occured during flight. Even though the open source autopilot is incredibly difficult to parse through and overall not very well written by industry computer science standards, it can be manipulated to add custom MAVLink functionality. 
-
 An added problem of working with this flight controller is the time and processing constraints that adding a custom bit of functionality to an already extremely overtasked system come with. However, by keeping subroutines short, it was possible to add a good amount of data collecting and transmission software to an already built system.
+
+\subsection{Data Transfer Conclusion}
+Data transmission software is essential to pulling real time data that closely reflects and explains the events that occured during flight. Even though the open source autopilot is incredibly difficult to parse through and overall not very well written by industry computer science standards, it can be manipulated to add custom MAVLink functionality. Once the difficultly of working with different transmission protocols over several different programming languges is overcome, data transfer's extreme value can be truly realized. 
 
 % Kodiak
 \section{Control System}
@@ -522,7 +518,6 @@ the current GPS location, current time, and fire size value to the ground statio
 
 \subsection{Limitations and Problems}
 The minimum detectable fire size is a crucial metric of our system. The smaller it is, the smaller the fire will be when first responders arrive. The smaller it is, the easier it is to suppress the fire. This metric depends on the cruising altitude of the aircraft, and the resolution of the camera. This system was only tested at heights below 400 feet, due to FAA regulations. In practice, the cruising altitude should be higher, to mitigate collision with trees or terrain. This negatively affects the minimum detectable fire size. This can be compensated for with a higher resolution camera, however thermal cameras rapidly increase in price with increasing resolution. In short, using higher resolution thermal cameras is not a scalable solution. Using regular optical cameras is one solution, but these have many drawbacks, as discussed in section \ref{fire_comparison_section}.  
-
 Our fire detection system produces relatively simple information. It records its current GPS location and the current time whenever it flies over a fire. However, there are many more characteristics about a fire that are relevant to fire fighters. 
 
 Fire fighters are interested in modeling fires. The location of the starting point of a fire is nice to know, but it is equally important to know what the fire will do after it has started. Fire models attempt to describe the intensity, forward rate of spread, perimeter growth rate, area of perimeter, and shape of perimeter. 
@@ -551,13 +546,13 @@ Given these additional fire characteristics, it is only natural that our project
 \section{Conclusion}
 We now have a control system implemented and ready to be simulated. We do not want to immediately jump into autonomous mode becuase if it does not work as we expect, the plane might crash, or fly far away and never return. For this reason, we are designing a Software in the Loop (SITL) simulation to detect any bugs in the autonomous code. One has been found already where if the aircraft is launched in the opposite direction from its first GPS waypoint, it will never turn around! The ArduPlane code tries to fly the plane around the entire world to hit the waypoint, but since our plane does not have enough battery life to make the journey, it would crash. Future work includes more simulation, and testing the autopilot in real time once we feel we have found all the bugs and we know how to avoid them.
 
-
 \appendices
 \section*{Appendix}
-WHAT EVEN IS AN APPENDIX
 
 \section*{Acknowledgements}
 Kodiak would like to thank the authors of Small Unmanned Aircraft, and Unmanned Aircraft Design for providing such detailed descriptions on UAV design and control. He would also like to thank all researchers that are apart of Glider soaring via reinforcement learning in the field \cite{GliderBirds} for conducting such excellent work that will contribute to his capstone project.
+
+Max would like to thank Kodiak's family for giving so much money to this project so that he could spend more money on beer rather than plane parts. 
 
 \begin{thebibliography}{2}
 % Max's citations
@@ -567,12 +562,8 @@ Kodiak would like to thank the authors of Small Unmanned Aircraft, and Unmanned 
 ``MAVLink," Wikipedia, 08-Nov-2018. [Online]. Available: https://en.wikipedia.org/wiki/MAVLink\#Packet\_Structure. [Accessed: 05-Mar-2019].
 \bibitem{Pixhawk basics}
 ``Pixhawk 4," Basic Concepts · PX4 User Guide. [Online]. Available: https://docs.px4.io/en/flight\_controller/pixhawk4.html. [Accessed: 06-Mar-2019].
-<<<<<<< HEAD
 \bibitem{Teensy info}
 ``Teensy v3.1 - 32 bit arduino-compatible microcontroller board," Velleman Spotlight. [Online]. Available: https://www.velleman.eu/products/view?id=420178\&country=be\&lang=en. [Accessed: 06-Mar-2019].
-
-\bibitem{cuh4}
-``Teensy v3.1 - 32 bit arduino-compatible microcontroller board," Velleman Spotlight. [Online]. Available: https://www.velleman.eu/products/view?id=420178. [Accessed: 06-Mar-2019].
 
 % Kodiak's citations
 \bibitem{S-U-A}
