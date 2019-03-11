@@ -50,7 +50,7 @@ MAVLink is a protocol commonly used between drones and ground stations. Most aut
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{MavlinkStructure.png}
-\caption{Max B1}
+\caption{MAVLink protocol v1.0 packet structure}
 \label{mavStruct}
 \end{figure}
 
@@ -71,7 +71,7 @@ The team landed on using the 3DR Radio Telemetry Kit. This set of transmitters a
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{telemmodule.jpg}
-\caption{Max B1}
+\caption{916MHz telemetry module}
 \label{mavStruct}
 \end{figure}
 
@@ -84,7 +84,7 @@ Our data transmission system starts in the Pixhawk scheduler code in the main fi
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{Scheduler.png}
-\caption{Max B3}
+\caption{Ardupilot scheduler}
 \label{mavSched}
 \end{figure}
 
@@ -94,7 +94,7 @@ The highlighted line of code schedules the GCS sending module, which calls funct
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{GCS_Mavlink.png}
-\caption{Max B4}
+\caption{Vehicle specific MAVLink sending function}
 \label{gcsMav}
 \end{figure}
 
@@ -106,12 +106,22 @@ Below is the fallback function at the end of the previous function that links th
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{Fallthrough.png}
-\caption{Max B5}
+\caption{Sending function common to all Ardupilot vehicles}
 \label{fallthrough}
 \end{figure}
 
 By editing code in either the library function or the ArduPlane specific function, it was possible to make changes to the MAVLink messages that were being sent to the ground station. 
 Changes were made to existing MAVLink definitions rather than create new ones because of the difficulty in changing the MAVLink protocol version from version 1.0 to version 2.0 (please view the problems section for more information on this issue). To edit MAVLink message definitions, changes needed to be made in the common.xml or ardupilotmega.xml files.
+
+
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3in]{message.png}
+\caption{Sending function common to all Ardupilot vehicles}
+\label{fallthrough}
+\end{figure}
+
 \subsubsection{Design Process}
 The design process was begun by trying to prevent the flight controller from having to handle any of the data transmission at all. Instead, the original plan was to have a Teensy microcontroller serve as the gateway between the ground station on the ground and the plane up in the sky. The first thing that was done was to set up a UART link between the Teensy and the flight controller, sending over information that would eventually be relayed to the ground station. The overall structure looked like this:
 % MAX PICTURE 6
@@ -119,7 +129,7 @@ The design process was begun by trying to prevent the flight controller from hav
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{Version1.png}
-\caption{Max B6}
+\caption{Original design}
 \label{version1}
 \end{figure}
 
@@ -130,7 +140,7 @@ It didn't make sense to spend a lot of time designing a system where the Teensy 
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{Version2.png}
-\caption{Max B7}
+\caption{Updated design without Teensy microcontroller}
 \label{version2}
 \end{figure}
 
@@ -142,7 +152,7 @@ Due to a parameter problem that will be covered in-depth in the problems part of
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{Sending.png}
-\caption{Max B8}
+\caption{Sending control flow}
 \label{sending}
 \end{figure}
 
@@ -172,7 +182,7 @@ An added problem of working with this flight controller is the time and processi
 \subsection{Introduction}
 The control systems section will explore the mysterious art of controlling planes without a pilot on-board. The overall plan is to control the aircraft in an optimal way to detect wildfires, but for now, we are just focused on control in general.
 
-\section{Project Conclusion}
+\section{Project Conclusion} this is very hurt
 \LaTeX\ is a very useful tool for generating professional PDF documents. Its equation editor makes it simple to add lengthy mathematical equations in a short amount of time, and allows for images to be inserted and BRU NEEDS AN EDIT. There is a learning curve to the language, but hopefully by now readers are familiar with the basic commands and terminology. Thanks to the World Wide Web, tutorials and forums are available in seconds to help learn any advanced \LaTeX\ commands. Thanks for reading!
 
 \appendices
@@ -184,13 +194,13 @@ Kodiak would like to thank the authors of Small Unmanned Aircraft, and Unmanned 
 
 \begin{thebibliography}{1}
 % Max's citations
-\bibitem{cuh1}
+\bibitem{Ardupilot source}
 ``ArduPlane Home," ArduPilot. [Online]. Available: http://ardupilot.org/plane/index.html. [Accessed: 06-Mar-2019].
-\bibitem{cuh2}
+\bibitem{MAVLink packet structure}
 ``MAVLink," Wikipedia, 08-Nov-2018. [Online]. Available: https://en.wikipedia.org/wiki/MAVLink\#Packet\_Structure. [Accessed: 05-Mar-2019].
-\bibitem{cuh3}
+\bibitem{Pixhawk basics}
 ``Pixhawk 4," Basic Concepts · PX4 User Guide. [Online]. Available: https://docs.px4.io/en/flight\_controller/pixhawk4.html. [Accessed: 06-Mar-2019].
-\bibitem{cuh4}
+\bibitem{Teensy info}
 ``Teensy v3.1 - 32 bit arduino-compatible microcontroller board," Velleman Spotlight. [Online]. Available: https://www.velleman.eu/products/view?id=420178\&country=be\&lang=en. [Accessed: 06-Mar-2019].
 
 % Kodiak's citations
@@ -218,6 +228,9 @@ Sadraey, M. (n.d.). Unmanned aircraft design.
 is currently a senior at the University of California - Santa Cruz. He is majoring in Robotics Engineering, and looking for a career in the new drone industry once he graduates. On his free time, Kodiak enjoys surfing, repairing his truck, and flying his RC race quadcopter.
 \end{IEEEbiographynophoto}
 
+\begin{IEEEbiographynophoto}{Maxwell Bradley}
+is a senior at UC Santa Cruz. He is a computer engineering major speciailizing in computer system, which dabbles in both hardware and software. He will be continuing into the computer engineering MS program here at UCSC after he completes his bachelors, and hopes to work for himself after he graduates. When he isn't laboring over some piece of code, he enjoys distance running, playing the guitar, and checking out breweries.
+\end{IEEEbiographynophoto}
 % insert where needed to balance the two columns on the last page with
 % biographies
 %\newpage
