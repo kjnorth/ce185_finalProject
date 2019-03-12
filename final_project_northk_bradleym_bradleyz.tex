@@ -109,7 +109,7 @@ The team landed on using the 3DR Radio Telemetry Kit. This set of transmitters a
 \label{mavStruct}
 \end{figure}
 
-\section{Results and Discussion}
+\subsection{Results and Discussion}
 This section of the paper will be about the overall set up of the system, the design process, and the problems that were encountered on the way.
 \subsubsection{System Set Up}
 Our data transmission system starts in the Pixhawk scheduler code in the main file called ArduPlane.cpp. The flight controller is essentially a microcontroller without an operating system, which means that it needs to implement a scheduling system that figures out which process of the hundreds of processes competing for the processor to run. This is what the scheduler looks like in code:
@@ -359,9 +359,9 @@ Refer to Figure \ref{mainScheme} for the wiring diagram of all the electronics c
 
 With all components connected, the first step is to run through Mission Planner's setup wizard. This involves calibrating sensors on the Pixhawk, flashing it with the latest firmware, choosing the battery sensor module, and configuring the Taranis X9D so Mission Planner recognizes its PWM outputs. If incorrect PWM values are observed, or they do not change with stick movements, navigate to ``Initial Setup" $\rightarrow$ ``Servo Output". Then change each channel function from throttle, ailerons, elevator, and rudder to their respective RCINx channels as defined in Table \ref{x8rChannels}.
 
-The next step is to configure the flight modes in mission planner so switches on the X9D can cycle through different modes. If the preconfigured Flight Deck model is used (described in the next section), RC channel 5 will be mapped to switches SD and SC. Play with these to set the preferred flight mode selections. With everything powered on, when one of those switches is flicked, one can see the flight mode change from gray to green in Mission Planner. Now when in MANUAL or STABILIZE mode, and the flight controller armed (1 second press on the GPS safety switch), the X9D should have full control of the motor and servos!
+The next step is to configure the flight modes in mission planner so switches on the X9D can cycle through different modes. If the preconfigured Flight Deck model is used (described in the next section), RC channel 5 will be mapped to switches SD and SC. Play with these to set the preferred flight mode selections. With everything powered on, when one of those switches is flicked, one can see the flight mode change from gray to green in Mission Planner. Now when in MANUAL or STABILIZE mode, and the flight controller armed (1 second press on the GPS safety switch), the X9D should have full control of the motor and servos!\\
 
-\begin{figure*}[h!]
+\begin{figure*}[h]
 \hspace*{0cm}
 \centering
 \includegraphics[width=\textwidth]{hardwareBlockDiagram.png}
