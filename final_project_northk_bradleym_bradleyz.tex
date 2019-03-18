@@ -12,6 +12,7 @@
 }
 
 \begin{document}
+\sloppy
 
 \title{Telemetry, Control Systems, and Sensors on an Autonomous Aircraft}
 \author{Maxwell~Bradley, Kodiak~North, and Zane~Bradley}
@@ -38,7 +39,7 @@ Aircraft, Airplane, RC Airplane, UAV, Autonomous, Wildfire, Wildfire Detection, 
 \maketitle
 
 \tableofcontents 
-
+\newpage
 \section{Project Introduction}
 
 \IEEEPARstart{F}{orever} Flight is a persistent aerial monitoring system to detect wildfires in fire-prone areas. It will consist of a plane with a mounted IR camera to detect fires below and a flight controller capable of autopilot, guidable with GPS waypoints sent from a laptop computer on the ground. This project was named `Forever Flight' for its goal of never having to recharge its batteries, staying aloft and performing fire detection while the sun is up, charging back up from solar energy and our power regenerative mechanisms. 
@@ -48,18 +49,18 @@ This project was inspired by the recent California wildfires like the Camp Fire,
 % MAX B
 \section{Data Transfer}
 \subsection{Introduction}
-An important part of this project is the data transfer from the plane to the ground station. This transfer contains a huge amount of different kinds of data, such as fire detection stats, fire detection processing, GPS coordinates, and more. Getting this kind of information out of the plane can be challenging because of the flight controller's running overhead and varying transmission protocol versions. I will focus this section of the paper on the transfer of data between the in-flight aircraft and the ground control station.
+There is a large amount of information coming out of the aircraft at any time, transferred over telemetry. This transfer contains a huge amount of different kinds of data, such as fire detection stats, fire detection processing, GPS coordinates, and more. Getting this kind of information out of the plane can be challenging because of the flight controller's running overhead and varying transmission protocol versions. I will focus this section of the paper on the transfer of data between the in-flight aircraft and the ground control station.
 
 \subsection{Materials and Material Background}
 Many different components make up the data transmission path between the plane itself and the ground station. I will now discuss each of those components in detail.
 
 \subsubsection{Pixhawk Flight Controller}
-The Pixhawk flight controller is the main brain of the entire plane. It receives IR information from the downward facing IR sensor through a serial communication port (using the I2C protocol). The Pixhawk is where the majority of the data transfer work occurs in the second and third versions of the data transmission system design. It uses an overall system scheduler to decide when to call the MAVLink packet sending function. Within that MAVLink sending function, one of a large group of packets is selected and sent over whatever telemetry port MAVLink is configured to use.
+The flight controller is the main brain of the entire plane. It receives IR information from the downward facing IR sensor through a serial communication port (using the I2C protocol). The Pixhawk is where the majority of the data transfer work occurs in the second and third versions of the data transmission system design. It uses an overall system scheduler to decide when to call the MAVLink packet sending function. Within that MAVLink sending function, one of a large group of packets is selected and sent over whatever telemetry port MAVLink is configured to use.
 
 \subsubsection{MAVLink}
 MAVLink is a protocol commonly used between drones and ground stations. Most autopilots use MAVLink to both send and receive packets to and from the ground station. Its packet structure is described in the following table.
-% MAX PICTURE 1
 
+% MAX PICTURE 1
 \begin{table}[h!]
 \centering
 
@@ -102,20 +103,23 @@ This autopilot is written in C++, and has a relatively small code base for the A
 The majority of the substance for the ArduPlane module is contained in the libraries. These libraries contain code which all different vehicle versions that run ArduPilot (ArduPlane, ArduSub, ArduTractor, etc.) use. More importantly, they provide functionality for sending MAVLink packets that can be used between vehicles, hardware abstraction layers, control systems, and plenty more. 
 
 \subsubsection{Telemetry Module}
-The team landed on using the 3DR Radio Telemetry Kit. This set of transmitters and receivers use the frequency 916MHz. The flight controller uses this link to send flight data. The ground station sends GPS coordinates for the plane to go to on over this link as well. A picture of this module is below.
+The team landed on using the 3DR Radio Telemetry Kit. This set of transmitters and receivers use the frequency 916MHz. The flight controller uses this link to send flight data. The ground station sends GPS coordinates for the plane to go to on over this link as well. A picture of this module can be found in figure ~\ref{mavStruct}.
+
 % MAX PICTURE 2
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{telemmodule.jpg}
-\caption{916MHz telemetry module}
+
+\caption{916MHz telemetry module \cite{telemModule}.}
+
 \label{mavStruct}
 \end{figure}
 
 \subsection{Results and Discussion}
 This section of the paper will be about the overall set up of the system, the design process, and the problems that were encountered on the way.
 \subsubsection{System Set Up}
-Our data transmission system starts in the Pixhawk scheduler code within the main file called ArduPlane.cpp. The flight controller is essentially a microcontroller without an operating system, which means that it needs to implement a scheduling system that figures out which process out of hundreds for the processor to run. This is what the scheduler looks like in code:
+Our data transmission system starts in the Pixhawk scheduler code within the main file called ArduPlane.cpp. The flight controller is essentially a microcontroller without an operating system, which means that it needs to implement a scheduling system that figures out which process out of hundreds for the processor to run. The scheduler code can be found in figure ~\ref{mavSched}.
 % MAX PICTURE 3
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -125,7 +129,8 @@ Our data transmission system starts in the Pixhawk scheduler code within the mai
 \label{mavSched}
 \end{figure}
 
-The highlighted line of code schedules the GCS sending module, which calls functions to use the MAVLink link between the ground station and the plane. Diving deeper into the code base in the plane folder, there is the GCS\_MAVLink.cpp file that contains the functions to actually go about sending the message. This is where changes started:
+The highlighted line of code in figure ~\ref{mavSched} schedules the GCS sending module, which calls functions to use the MAVLink link between the ground station and the plane. Diving deeper into the code base in the plane folder, there is the GCS\_MAVLink.cpp file that contains the functions to actually go about sending the message. This code can be found in figure ~\ref{gcsMav}.
+
 % MAX PICTURE 4
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -135,9 +140,9 @@ The highlighted line of code schedules the GCS sending module, which calls funct
 \label{gcsMav}
 \end{figure}
 
-As a backup to the above function, ArduPilot also implemented a function that all vehicles under the ArduPilot umbrella use. If none of the IDs passed into the try\_send\_message function matched, it would fall into the try\_send\_message that was defined in the libraries of ArduPilot. This was good for the overall project structuring, but made figuring out the actual implementation of MAVLink transmission very challenging. 
+As a backup to the function in figure ~\ref{mavSched}, ArduPilot also implemented a function that all vehicles under the ArduPilot umbrella use. If none of the IDs passed into the try\_send\_message function matched, it would fall into the try\_send\_message that was defined in the libraries of ArduPilot. This was good for the overall project structuring, but made figuring out the actual implementation of MAVLink transmission very challenging. 
 
-Below is the fallback function at the end of the try\_send\_message function that links the plane MAVLink implementation to the common MAVLink packets that all ArduPilot vehicles use. This function is contained in the library files that all ArduPilot vehicles have access to. 
+Figure ~\ref{fallthrough} is the fallback function at the end of the try\_send\_message function that links the plane MAVLink implementation to the common MAVLink packets that all ArduPilot vehicles use. This function is contained in the library files that all ArduPilot vehicles have access to. 
 % MAX PICTURE 5
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -148,19 +153,19 @@ Below is the fallback function at the end of the try\_send\_message function tha
 \end{figure}
 
 By editing code in either the library try\_send\_message function or the ArduPlane specific try\_send\_message function, I as able to make changes to the MAVLink messages that were being sent to the ground station. 
-I changed existing MAVLink definitions rather than create new ones because of the difficulty in changing the MAVLink protocol version from version 1.0 to version 2.0 (please view the problems section for more information on this issue). I started by selected messages to get overwrite in the common.xml file.
+I changed existing MAVLink definitions rather than create new ones because of the difficulty in changing the MAVLink protocol version from version 1.0 to version 2.0 (please view the problems section for more information on this issue). I started by selecting messages to overwrite in the common.xml file. An example of the XML code can be found in figure ~\ref{fallthrough}.
 
 
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{message.png}
-\caption{Sending function common to all Ardupilot vehicles}
+\caption{XML definitions of MAVLink packets}
 \label{fallthrough}
 \end{figure}
 
 \subsubsection{Design Process}
-I began the design process by trying to prevent the flight controller from having to handle any of the data transmission at all. Instead, my original plan was to have a Teensy microcontroller serve as the gateway between the ground station on the ground and the plane up in the sky. The first thing that I did was to set up a UART link between the Teensy and the flight controller, sending over information that would eventually be relayed to the ground station. The overall structure looked like this:
+I began the design process by trying to prevent the flight controller from having to handle any of the data transmission at all. Instead, my original plan was to have a Teensy microcontroller serve as the gateway between the ground station on the ground and the plane up in the sky. The first thing that I did was to set up a UART link between the Teensy and the flight controller, sending over information that would eventually be relayed to the ground station. The overall structure can be found in figure ~\ref{version1}.
 % MAX PICTURE 6
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -172,7 +177,7 @@ I began the design process by trying to prevent the flight controller from havin
 
 However, this original set up became less than optimal when the incredible wealth of the already existing ground control software became apparent. I discovered that the ground control software, Mission Planner, could be used to send GPS waypoints to the plane which the plane would then track to without any extra code. The interface between the flight controller and the ground control station would only work if it could receive bytes from the ground station. This required the flight controller to have a direct link to the ground station which it was not configured to do in the first design. 
 
-It didn't make sense to spend a lot of time designing a system where the Teensy acted as a go-between for the flight controller and ground station. In addition, the small and underpowered Teesny with a processor clocked at 48 MHz could not hope to keep up with a flight controller clocked at over 3 times that. The Teensy was then removed from the picture, letting the flight controller bear a greater computational load. A diagram of the evolved design is below.
+It didn't make sense to spend a lot of time designing a system where the Teensy acted as a go-between for the flight controller and ground station. In addition, the small and underpowered Teesny with a processor clocked at 48 MHz could not hope to keep up with a flight controller clocked at over 3 times that. The Teensy was then removed from the picture, letting the flight controller bear a greater computational load. A diagram of the second design can be found in figure ~\ref{version2}.
 
 % MAX PICTURE 7
 \begin{figure}[h!]
@@ -183,33 +188,45 @@ It didn't make sense to spend a lot of time designing a system where the Teensy 
 \label{version2}
 \end{figure}
 
-After the flight controller became the center of data processing and transmission, the design process began anew. The first important thing to do was to get a good understanding all of the underlying code for data transmission in the ArduPilot framework. After tracking down the control flow through the different files which eventually ended in in the library file that all ArduPilot vehicles used, the next step was to add a particular message to the common.xml file which contained the MAVLink message definitions. 
+While this new set up removed complexity from the system, it placed a lot more stress on the flight controller. Instead of just flying the plane and keeping the control systems in check, it had to do image processing work for the IR camera. To reduce the stress on the flight controller, we decided to place the Teensy micro back on board. It would be in charge of performing all fire detection. The flight controller would listen on a serial port for a signal from the Teensy for whether a fire was detected. The flight controller's only added load would then only be to send out one extra MAVLink packet and listen on a serial port. This is far less stressful than trying to squeeze image processing into an already tightly scheduled system. The final design layout can be found in figure ~\ref{version3}.
 
-Due to a parameter problem that I will cover in-depth in the problems part of this discussion, I found it necessary to overwrite one of the existing MAVLink definitions. The HIL\_STATE message with ID 90  was selected because it had been replaced by another message and was no longer in use. This message was overwritten with a custom packet that contained fire detection data. This packet would only be sent when the sensing apparatus detected a fire. The simple control flow of this setup is as follows.
 % MAX PICTURE 8
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
-\includegraphics[width=4in]{Sending.png}
+\includegraphics[width=3in]{Version3.png}
+\caption{Final design}
+\label{version3}
+\end{figure}
+
+After the two computing devices had their roles clearly set, the design process began anew. The first important thing to do was to get a good understanding all of the underlying code for data transmission in the ArduPilot framework. After tracking down the control flow through the different files which eventually ended in in the library file that all ArduPilot vehicles used, the next step was to add a particular message to the common.xml file which contained the MAVLink message definitions. 
+
+Due to a parameter problem that I will cover in-depth in the problems part of this discussion, I found it necessary to overwrite one of the existing MAVLink definitions. The HIL\_STATE message with ID 90  was selected because it had been replaced by another message and was no longer in use. This message was overwritten with a custom packet that contained fire detection data. This packet would only be sent when the sensing apparatus detected a fire. The simple control flow of this setup can be found in figure ~\ref{sending}.
+
+% MAX PICTURE 9
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3in]{Sending.png}
 \caption{Control flow of fire packet transmission algorithm}
 \label{sending}
 \end{figure}
 
-I wrote a Python script on the ground station side that used the Python package PyMavlink. This script read the serial port incoming messages would enter on and translate the incoming data into a human readable form. The associated data was then used to make plots, such as the following that plots latitude and longitude from the incoming GPS data packets.
+I wrote a Python script on the ground station side that used the Python package PyMavlink. This script read the serial port incoming messages would enter on and translate the incoming data into a human readable form. The associated data was then used to make plots, such as the one in figure ~\ref{flyingGraph} that plots latitude and longitude from the incoming GPS data packets.
 
 This allows for the collection of real time flight data which can be very different from the data read from a wind tunnel in the lab. 
-% MAX PICTURE 9
+
+% MAX PICTURE 10
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
 \includegraphics[width=3.5in]{flight02-22-2019_maiden.png}
 \caption{Plot of the aircraft's maiden flight using GPS coordinates that were logged in real time via the telemetry link.}
-\label{maidenFlightPlot}
+\label{flyingGraph}
 \end{figure}
 
-
 \subsubsection{Design Problems}
-The biggest and most enveloping design problem I encountered during this project was changing the MAVLink protocol version. Please note the MAVLink byte structure referred to in the next few sentences is the first diagram of data transmission section of the report. The 5th byte of the packet designates the ID number that corresponds to the MAVLink message. This limits the total number of incoming messages to 256. The common.xml file contains message definitions up to 256. Due to the limited number of bits (8) that correspond to the incoming ID, there are only 256 possible messages that can be sent. This is why overwriting the already defined messages in the common.xml file is needed. Creating new messages with an ID value greater than 255 could not be sent by the current MAVLink protocol. 
+The biggest and most enveloping design problem I encountered during this project was changing the MAVLink protocol version. Please note the MAVLink byte structure referred to in the next few sentences is the first diagram of data transmission section of the report. The 5th byte of the packet designates the ID number that corresponds to the MAVLink message. This limits the total number of incoming messages to 256. The common.xml file contains message definitions up to 256. Due to the limited number of bits (8) that correspond to the incoming ID, there are only 256 possible messages that can be sent. This is why overwriting the already defined messages in the common.xml file is needed. Creating new messages with an ID value greater than 255 could not be sent by the current MAVLink protocol.
 
 I realized this when I created a custom packet with an ID value of 11065 and tried to send it. However, nothing was sent, not even garbage. This along with the packet header of 0xFE made it very clear that the first version of the MAVLink protocol was used rather than the updated and more flexible MAVLink version 2. Overwriting the message was a necessary evil to send custom packets. 
 
@@ -481,7 +498,7 @@ According to Planck's Law, all matter radiates energy in proportion to its tempe
 There are several wavelength bands within the Infrared Region. The Thermal Infrared Region occupies wavelengths of 8-15 $\mu$m. 
 The Medium Wave Infrared Region occupies wavelengths of 3-5$\mu$m. A peak in the Thermal Infrared Region range indicates an object that is roughly 248K. 
 The Thermal Infrared Region is not appropriate for our application, because wood burns at 573-973K \cite{estimating_wildfire}.
-Instead, we will use The Medium Wave Infrared Region. 
+Instead, we will use the Medium Wave Infrared Region. 
 A peak in this region indicates an object that is between 600K and 900K.
 
 \begin{figure}[h]
@@ -520,12 +537,13 @@ Each pixel represents a 13x10 square foot region.}
 Each pixel represents a 13x10 square foot region, which is the smallest detectable fire size. Any fire smaller than this 
 will not register on the camera, and therefore cannot be detected by the system.
 
-The following image describes the algorithm that backs the fire detection system. 
+Image \ref{fire_detection_algorithm} describes the algorithm that backs the fire detection system. 
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=3.5in]{fire_detection_algorithm.png}
 \caption{Fire detection algorithm}
+\label{fire_detection_algorithm}
 \end{figure} 
 
 Upon receiving a fire size message, the main microcontroller transmits
@@ -543,14 +561,14 @@ The forward rate of spread of a fire is the speed at which a particular point on
 
 The rate of spread, or rate of perimeter growth is self descriptive. It also has units of distance per unit time. An extremely large fire could have a small forward rate of spread, but a large rate of perimeter growth.
 
-These models depend on information about the fire, such as location, the moisture content of the fuel, the wind speed, the wind direction, and the slope of the surrounding terrain. The figure below, produced by F. Albini \cite{estimating_wildfire}, shows different shapes of fire, depending on wind speed.
+These models depend on information about the fire, such as location, the moisture content of the fuel, the wind speed, the wind direction, and the slope of the surrounding terrain. Figure \ref{fire_shape}, produced by F. Albini \cite{estimating_wildfire}, shows different shapes of fire, depending on wind speed.
 
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
 \includegraphics[width=3.5in]{fire_shape.png}
 \caption{Approximate fire shapes (not sizes, the scales are arbitrary) for windspeeds of 5, 10, 15, 20, and 30 mi/h \cite{estimating_wildfire}}
-\label{maidenFlightPlot}
+\label{fire_shape}
 \end{figure}
 
 It is important to keep in mind that models are only an approximation of true fire behavior, and are inherently inaccurate. Fires are also difficult and dangerous to reproduce in a laboratory setting. A large, realistic wildfire would never be purposely started for the sake of measurement. This means that data on wildfires is hard to come by, and of low quality. A model may also be inaccurate if certain assumptions are broken. Many models assume that the region on fire is composed of a single fuel source, which is uniformly dense.
@@ -578,7 +596,14 @@ Max would like to thank Precision Hawk for giving us around two thousand dollars
 \bibitem{Pixhawk basics}
 ``Pixhawk 4," Basic Concepts · PX4 User Guide. [Online]. Available: https://docs.px4.io/en/flight\_controller/pixhawk4.html. [Accessed: 06-Mar-2019].
 \bibitem{Teensy info}
-``Teensy v3.1 - 32 bit arduino-compatible microcontroller board," Velleman Spotlight. [Online]. Available: https://www.velleman.eu/products/view?id=420178\&country=be\&lang=en. [Accessed: 06-Mar-2019].
+``Teensy v3.1 - 32 bit arduino-compatible microcontroller board," Velleman Spotlight. [Online]. Available: 
+https://www.velleman.eu/products/view\linebreak?id=420178\&country=be\&lang=en. [Accessed: 06-Mar-2019].
+
+\bibitem{telemModule}
+
+
+``Banggood.com, “3DR Radio Telemetry Kit With Case 433MHZ 915MHZ For MWC APM PX4 Pixhawk for FPV RC Airplane RC Toys \& Hobbies from Toys Hobbies and Robot on banggood.com,” www.banggood.com. [Online]. Available: https://bit.ly/2JisfKa [Accessed: 18-Mar-2019].
+
 
 % Kodiak's citations
 \bibitem{S-U-A}
@@ -598,49 +623,45 @@ Sadraey, M. (n.d.). Unmanned aircraft design.
 
 % Zane's citations
 \bibitem{electromagnetic_spectrum}
-Electromagnetic Spectrum, Wikipedia. [Online]. Available: 
-https://en.wikipedia.org/wiki/Electromagnetic\_spectrum
+"Electromagnetic spectrum", en.wikipedia.org, 2019. [Online]. Available: https://en.wikipedia.org/wiki/Electromagnetic\_spectrum. [Accessed: 18- Mar- 2019].
 
 \bibitem{ffdi}
-Henry Cruz, Martina Eckert, Juan Meneses, Jose-Fernan Martinez, “Efficient Forest Fire Detection Index for Application in Unmanned Aerial Systems”, 16 June 2016
+H. Cruz, M. Eckert, J. Meneses and J. Martinez, Efficient Forest Fire Detection Index for Application in Unmanned Aerial Systems (UASs). Madrid: Research Center on Software Technologies and Multimedia Systems for Sustainability (CITSEM), 2016.
 
 \bibitem{technique_review}
-Ahmad Alkhatib, “A Review of Fire Detection Techniques”, The University of South Wales, UK, 5 March 2014
+A. Alkhatib, A Review on Forest Fire Detection Techniques. Hindawi Publishing Corporation, 2014.
 
 \bibitem{leaf_crops}
-Chiachung Chen, “Determining the Leaf Emissivity of Three Crops by Infrared Thermometry”, MDPI, 15 May 2015
+C. Chen, Determining the Leaf Emissivity of Three Crops by Infrared Thermometry. Taichung: MDPI Sensors, 2015.
 
 \bibitem{airborne_optical}
-Allison, Johnston, Craig, Jennings, “Airborne Optical and Thermal Remote Sensing for Wildfire Detection and Monitoring”, MDPI, 18 August 2016
+R. Allison, J. Johnston, G. Craig and S. Jennings, Airborne Optical and Thermal Remote Sensing for Wildfire Detection and Monitoring. MDPI Sensors, 2016.
 
 \bibitem{estimating_wildfire}
-Albini, F. (1976). Estimating wildfire behavior and effects. USDA Forest Service, Intermountain Forest and Range Experiment Station, General Technical Report INT-30, 92 pp.
+USDA Forest Service, "Estimating Wildfire Behavior and Effects", United States Department of Agriculture, Ogden, Utah, 1976.
 
 \bibitem{wireless_sensors}
-David M. Doolin and Nicholas Sitar "Wireless sensors for wildfire monitoring", Proc. SPIE 5765, Smart Structures and Materials 2005: Sensors and Smart Structures Technologies for Civil, Mechanical, and Aerospace Systems, (17 May 2005)
+D. Doolin and N. Sitar, Wireless sensors for wildfire monitoring. Berkeley: University of California, Berkeley, 2005.
 
 \bibitem{climate_and_wildfire}
-A. L. Westerling, A. Gershunov, T. J. Brown, D. R. Cayan, M. D. Dettinger, “Climate and Wildfire in the Western United States”, American Meteorological Society, May 2003
+[7]A. Westerling, A. Gershunov, T. Brown, D. Cayan and M. Dettinger, Climate and Wildfire in the Western United States. San Diego: American Meteorological Society, 2003.
 
 \bibitem{multisensor_network}
-I. Bosch, A. Serrano, and L. Vergara, “Multisensor Network System for Wildfire Detection Using Infrared Image Processing,” The Scientific World Journal, vol. 2013, Article ID 402196, 10 pages, 2013.
-
-
+I. Bosch, A. Serrano and L. Vergara, Multisensor Network System for Wildfire Detection Using Infrared Image Processing. Valencia, Spain: Hindawi Publishing Corporation, 2013.
 \end{thebibliography}
 
-% Kodiak's amazing bio
-\begin{IEEEbiographynophoto}{Kodiak North}
-is currently a senior at the University of California - Santa Cruz. He is majoring in Robotics Engineering, and looking for a career in the new drone industry once he graduates. On his free time, Kodiak enjoys surfing, repairing his truck, and flying his RC race quadcopter.
-\end{IEEEbiographynophoto}
+\vspace{1cm}
 
-\begin{IEEEbiographynophoto}{Maxwell Bradley}
+% Kodiak's amazing bio
+\textbf{Kodiak North}
+is currently a senior at the University of California - Santa Cruz. He is majoring in Robotics Engineering, and looking for a career in the new drone industry once he graduates. On his free time, Kodiak enjoys surfing, repairing his truck, and flying his RC race quadcopter.
+
+\textbf{Maxwell Bradley}
 is a senior at UC Santa Cruz. He is a computer engineering major speciailizing in computer system, which dabbles in both hardware and software. He will be continuing into the computer engineering MS program here at UCSC after he completes his bachelors, and hopes to work for himself after he graduates. When he isn't laboring over some piece of code, he enjoys distance running, playing the guitar, and checking out breweries.
-\end{IEEEbiographynophoto}
 
 % Zane's bio
-\begin{IEEEbiographynophoto}{Zane Bradley}
+\textbf{Zane Bradley}
 is a 4th year Computer Engineering student at the University of California, Santa Cruz. He loves to hiking, traveling, listening to music, and programming in his free time.
-\end{IEEEbiographynophoto}
 
 
 
