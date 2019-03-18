@@ -59,8 +59,8 @@ The flight controller is the main brain of the entire plane. It receives IR info
 
 \subsubsection{MAVLink}
 MAVLink is a protocol commonly used between drones and ground stations. Most autopilots use MAVLink to both send and receive packets to and from the ground station. Its packet structure is described in the following table.
-% MAX PICTURE 1
 
+% MAX PICTURE 1
 \begin{table}[h!]
 \centering
 
@@ -103,15 +103,15 @@ This autopilot is written in C++, and has a relatively small code base for the A
 The majority of the substance for the ArduPlane module is contained in the libraries. These libraries contain code which all different vehicle versions that run ArduPilot (ArduPlane, ArduSub, ArduTractor, etc.) use. More importantly, they provide functionality for sending MAVLink packets that can be used between vehicles, hardware abstraction layers, control systems, and plenty more. 
 
 \subsubsection{Telemetry Module}
-The team landed on using the 3DR Radio Telemetry Kit. This set of transmitters and receivers use the frequency 916MHz. The flight controller uses this link to send flight data. The ground station sends GPS coordinates for the plane to go to on over this link as well. A picture of this module is below.
+The team landed on using the 3DR Radio Telemetry Kit. This set of transmitters and receivers use the frequency 916MHz. The flight controller uses this link to send flight data. The ground station sends GPS coordinates for the plane to go to on over this link as well. A picture of this module can be found in figure ~\ref{mavStruct}.
 
 % MAX PICTURE 2
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{telemmodule.jpg}
-\cite{telemModule}
-\caption{916MHz telemetry module}
+
+\caption{916MHz telemetry module \cite{telemModule}.}
 
 \label{mavStruct}
 \end{figure}
@@ -119,7 +119,7 @@ The team landed on using the 3DR Radio Telemetry Kit. This set of transmitters a
 \subsection{Results and Discussion}
 This section of the paper will be about the overall set up of the system, the design process, and the problems that were encountered on the way.
 \subsubsection{System Set Up}
-Our data transmission system starts in the Pixhawk scheduler code within the main file called ArduPlane.cpp. The flight controller is essentially a microcontroller without an operating system, which means that it needs to implement a scheduling system that figures out which process out of hundreds for the processor to run. This is what the scheduler looks like in code:
+Our data transmission system starts in the Pixhawk scheduler code within the main file called ArduPlane.cpp. The flight controller is essentially a microcontroller without an operating system, which means that it needs to implement a scheduling system that figures out which process out of hundreds for the processor to run. The scheduler code can be found in figure ~\ref{mavSched}.
 % MAX PICTURE 3
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -129,7 +129,8 @@ Our data transmission system starts in the Pixhawk scheduler code within the mai
 \label{mavSched}
 \end{figure}
 
-The highlighted line of code schedules the GCS sending module, which calls functions to use the MAVLink link between the ground station and the plane. Diving deeper into the code base in the plane folder, there is the GCS\_MAVLink.cpp file that contains the functions to actually go about sending the message. This is where changes started:
+The highlighted line of code in figure ~\ref{mavSched} schedules the GCS sending module, which calls functions to use the MAVLink link between the ground station and the plane. Diving deeper into the code base in the plane folder, there is the GCS\_MAVLink.cpp file that contains the functions to actually go about sending the message. This code can be found in figure ~\ref{gcsMav}.
+
 % MAX PICTURE 4
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -139,9 +140,9 @@ The highlighted line of code schedules the GCS sending module, which calls funct
 \label{gcsMav}
 \end{figure}
 
-As a backup to the above function, ArduPilot also implemented a function that all vehicles under the ArduPilot umbrella use. If none of the IDs passed into the try\_send\_message function matched, it would fall into the try\_send\_message that was defined in the libraries of ArduPilot. This was good for the overall project structuring, but made figuring out the actual implementation of MAVLink transmission very challenging. 
+As a backup to the function in figure ~\ref{mavSched}, ArduPilot also implemented a function that all vehicles under the ArduPilot umbrella use. If none of the IDs passed into the try\_send\_message function matched, it would fall into the try\_send\_message that was defined in the libraries of ArduPilot. This was good for the overall project structuring, but made figuring out the actual implementation of MAVLink transmission very challenging. 
 
-Below is the fallback function at the end of the try\_send\_message function that links the plane MAVLink implementation to the common MAVLink packets that all ArduPilot vehicles use. This function is contained in the library files that all ArduPilot vehicles have access to. 
+Figure ~\ref{fallthrough} is the fallback function at the end of the try\_send\_message function that links the plane MAVLink implementation to the common MAVLink packets that all ArduPilot vehicles use. This function is contained in the library files that all ArduPilot vehicles have access to. 
 % MAX PICTURE 5
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -152,7 +153,7 @@ Below is the fallback function at the end of the try\_send\_message function tha
 \end{figure}
 
 By editing code in either the library try\_send\_message function or the ArduPlane specific try\_send\_message function, I as able to make changes to the MAVLink messages that were being sent to the ground station. 
-I changed existing MAVLink definitions rather than create new ones because of the difficulty in changing the MAVLink protocol version from version 1.0 to version 2.0 (please view the problems section for more information on this issue). I started by selected messages to get overwrite in the common.xml file.
+I changed existing MAVLink definitions rather than create new ones because of the difficulty in changing the MAVLink protocol version from version 1.0 to version 2.0 (please view the problems section for more information on this issue). I started by selecting messages to overwrite in the common.xml file. An example of the XML code can be found in figure ~\ref{fallthrough}.
 
 
 \begin{figure}[h!]
@@ -164,7 +165,7 @@ I changed existing MAVLink definitions rather than create new ones because of th
 \end{figure}
 
 \subsubsection{Design Process}
-I began the design process by trying to prevent the flight controller from having to handle any of the data transmission at all. Instead, my original plan was to have a Teensy microcontroller serve as the gateway between the ground station on the ground and the plane up in the sky. The first thing that I did was to set up a UART link between the Teensy and the flight controller, sending over information that would eventually be relayed to the ground station. The overall structure looked like this:
+I began the design process by trying to prevent the flight controller from having to handle any of the data transmission at all. Instead, my original plan was to have a Teensy microcontroller serve as the gateway between the ground station on the ground and the plane up in the sky. The first thing that I did was to set up a UART link between the Teensy and the flight controller, sending over information that would eventually be relayed to the ground station. The overall structure can be found in figure ~\ref{version1}.
 % MAX PICTURE 6
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -176,7 +177,7 @@ I began the design process by trying to prevent the flight controller from havin
 
 However, this original set up became less than optimal when the incredible wealth of the already existing ground control software became apparent. I discovered that the ground control software, Mission Planner, could be used to send GPS waypoints to the plane which the plane would then track to without any extra code. The interface between the flight controller and the ground control station would only work if it could receive bytes from the ground station. This required the flight controller to have a direct link to the ground station which it was not configured to do in the first design. 
 
-It didn't make sense to spend a lot of time designing a system where the Teensy acted as a go-between for the flight controller and ground station. In addition, the small and underpowered Teesny with a processor clocked at 48 MHz could not hope to keep up with a flight controller clocked at over 3 times that. The Teensy was then removed from the picture, letting the flight controller bear a greater computational load. A diagram of the evolved design is below.
+It didn't make sense to spend a lot of time designing a system where the Teensy acted as a go-between for the flight controller and ground station. In addition, the small and underpowered Teesny with a processor clocked at 48 MHz could not hope to keep up with a flight controller clocked at over 3 times that. The Teensy was then removed from the picture, letting the flight controller bear a greater computational load. A diagram of the second design can be found in figure ~\ref{version2}.
 
 % MAX PICTURE 7
 \begin{figure}[h!]
@@ -187,8 +188,7 @@ It didn't make sense to spend a lot of time designing a system where the Teensy 
 \label{version2}
 \end{figure}
 
-While this new set up removed complexity from the system, it placed a lot more stress on the flight controller. Instead of just flying the plane and keeping the control systems in check, it had to do image processing work for the IR camera. To reduce the stress on the flight controller, we decided to place the Teensy micro back on board. It would be in charge of performing all fire detection. The flight controller would listen on a serial port for a signal from the Teensy for whether a fire was detected. The flight controller's only added load would then only be to send out one extra MAVLink packet and listen on a serial port. This is far less stressful than trying to squeeze image processing into an already tightly scheduled system. The final design layout is below.
-
+While this new set up removed complexity from the system, it placed a lot more stress on the flight controller. Instead of just flying the plane and keeping the control systems in check, it had to do image processing work for the IR camera. To reduce the stress on the flight controller, we decided to place the Teensy micro back on board. It would be in charge of performing all fire detection. The flight controller would listen on a serial port for a signal from the Teensy for whether a fire was detected. The flight controller's only added load would then only be to send out one extra MAVLink packet and listen on a serial port. This is far less stressful than trying to squeeze image processing into an already tightly scheduled system. The final design layout can be found in figure ~\ref{version3}.
 
 % MAX PICTURE 8
 \begin{figure}[h!]
@@ -201,31 +201,32 @@ While this new set up removed complexity from the system, it placed a lot more s
 
 After the two computing devices had their roles clearly set, the design process began anew. The first important thing to do was to get a good understanding all of the underlying code for data transmission in the ArduPilot framework. After tracking down the control flow through the different files which eventually ended in in the library file that all ArduPilot vehicles used, the next step was to add a particular message to the common.xml file which contained the MAVLink message definitions. 
 
-Due to a parameter problem that I will cover in-depth in the problems part of this discussion, I found it necessary to overwrite one of the existing MAVLink definitions. The HIL\_STATE message with ID 90  was selected because it had been replaced by another message and was no longer in use. This message was overwritten with a custom packet that contained fire detection data. This packet would only be sent when the sensing apparatus detected a fire. The simple control flow of this setup is as follows.
-% MAX PICTURE 8
+Due to a parameter problem that I will cover in-depth in the problems part of this discussion, I found it necessary to overwrite one of the existing MAVLink definitions. The HIL\_STATE message with ID 90  was selected because it had been replaced by another message and was no longer in use. This message was overwritten with a custom packet that contained fire detection data. This packet would only be sent when the sensing apparatus detected a fire. The simple control flow of this setup can be found in figure ~\ref{sending}.
+
+% MAX PICTURE 9
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
-\includegraphics[width=4in]{Sending.png}
+\includegraphics[width=3in]{Sending.png}
 \caption{Control flow of fire packet transmission algorithm}
 \label{sending}
 \end{figure}
 
-I wrote a Python script on the ground station side that used the Python package PyMavlink. This script read the serial port incoming messages would enter on and translate the incoming data into a human readable form. The associated data was then used to make plots, such as the following that plots latitude and longitude from the incoming GPS data packets.
+I wrote a Python script on the ground station side that used the Python package PyMavlink. This script read the serial port incoming messages would enter on and translate the incoming data into a human readable form. The associated data was then used to make plots, such as the one in figure ~\ref{flyingGraph} that plots latitude and longitude from the incoming GPS data packets.
 
 This allows for the collection of real time flight data which can be very different from the data read from a wind tunnel in the lab. 
-% MAX PICTURE 9
+
+% MAX PICTURE 10
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
 \includegraphics[width=3.5in]{flight02-22-2019_maiden.png}
 \caption{Plot of the aircraft's maiden flight using GPS coordinates that were logged in real time via the telemetry link.}
-\label{maidenFlightPlot}
+\label{flyingGraph}
 \end{figure}
 
-
 \subsubsection{Design Problems}
-The biggest and most enveloping design problem I encountered during this project was changing the MAVLink protocol version. Please note the MAVLink byte structure referred to in the next few sentences is the first diagram of data transmission section of the report. The 5th byte of the packet designates the ID number that corresponds to the MAVLink message. This limits the total number of incoming messages to 256. The common.xml file contains message definitions up to 256. Due to the limited number of bits (8) that correspond to the incoming ID, there are only 256 possible messages that can be sent. This is why overwriting the already defined messages in the common.xml file is needed. Creating new messages with an ID value greater than 255 could not be sent by the current MAVLink protocol. 
+The biggest and most enveloping design problem I encountered during this project was changing the MAVLink protocol version. Please note the MAVLink byte structure referred to in the next few sentences is the first diagram of data transmission section of the report. The 5th byte of the packet designates the ID number that corresponds to the MAVLink message. This limits the total number of incoming messages to 256. The common.xml file contains message definitions up to 256. Due to the limited number of bits (8) that correspond to the incoming ID, there are only 256 possible messages that can be sent. This is why overwriting the already defined messages in the common.xml file is needed. Creating new messages with an ID value greater than 255 could not be sent by the current MAVLink protocol.
 
 I realized this when I created a custom packet with an ID value of 11065 and tried to send it. However, nothing was sent, not even garbage. This along with the packet header of 0xFE made it very clear that the first version of the MAVLink protocol was used rather than the updated and more flexible MAVLink version 2. Overwriting the message was a necessary evil to send custom packets. 
 
