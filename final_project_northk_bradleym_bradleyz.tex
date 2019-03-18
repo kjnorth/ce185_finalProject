@@ -96,7 +96,7 @@ The most important part of this packet is the message id, the 5th byte in the in
 The autopilot that was chosen for this project uses the MAVLink protocol to communicate with the ground station. During my time as the data transmission engineer, I have become very familiar with this protocol.
 
 \subsubsection{ArduPilot}
-After looking at all the free and open source autopilots on the market, the team selected ArduPilot. This firmware can be run on a variety of different platforms: there is an ArduSub, an ArduCopter, an ArduTractor, and obviously an ArduPlane. The flight controller for this project uses the ArduPlane version. 
+After looking at all the free and open source autopilots on the market, we selected ArduPilot. This firmware can be run on a variety of different platforms: there is an ArduSub, an ArduCopter, an ArduTractor, and obviously an ArduPlane. The flight controller for this project uses the ArduPlane version. 
 
 This autopilot is written in C++, and has a relatively small code base for the ArduPlane itself. Its most important parts consist of a main plane scheduler, a MAVLink sending module, and a huge header file that includes all the important modules from the libraries and from the plane folder itself. 
 
@@ -230,7 +230,7 @@ The biggest and most enveloping design problem I encountered during this project
 
 I realized this when I created a custom packet with an ID value of 11065 and tried to send it. However, nothing was sent, not even garbage. This along with the packet header of 0xFE made it very clear that the first version of the MAVLink protocol was used rather than the updated and more flexible MAVLink version 2. Overwriting the message was a necessary evil to send custom packets. 
 
-The changing of this protocol is badly documented on the ArduPilot website. Eventually, a manual change using the MAVProxy Python library was attempted (specifically changing the protocol version parameter of MAVLink), but MAVLink 1 packets continued to be sent. In the interest of time, I decided that simply overwriting the useless packets defined for MAVLink 1 was the best course of action.
+The changing of this protocol is badly documented on the ArduPilot website. Eventually, I attempted a manual change using the MAVProxy Python library (specifically changing the protocol version parameter of MAVLink), but MAVLink 1 packets continued to be sent. In the interest of time, I decided that simply overwriting the useless packets defined for MAVLink 1 was the best course of action.
 
 An added problem of working with this flight controller is the time and processing constraints that adding a custom bit of functionality to an already extremely overtasked system come with. However, by keeping subroutines short, it was possible to add a good amount of data collecting and transmission software to an already built system.
 
