@@ -223,10 +223,10 @@ Data transmission software is essential to pulling real time data that closely r
 % Kodiak
 \section{Control System}
 \subsection{Introduction}
-The control systems section will explore the mysterious art of controlling planes without a pilot on-board. The overall plan is to control the aircraft in an optimal way to detect wildfires, but for now, we are just focused on control in general.
+The control systems section will explore the art of controlling planes without a pilot on-board. The overall plan is to control the aircraft in an optimal way to detect wildfires, but we are just focused on control in general for now.
 
 \subsubsection{Treating the Aircraft as a Dubins Vehicle}
-All information in this section was found in \cite{S-U-A}, chapters 9 and 10. These chapters focus mainly on creating a model for guidance and path following. Using coordinate frame matrices to resemble flight, we can model aircraft dynamics along with outside forces with the following equation (eq 9.9 in \cite{S-U-A}):
+This section focuses on creating a model for guidance and path following. Using coordinate frame matrices to resemble flight, we can model aircraft dynamics along with outside forces with the following equation (eq 9.9 in \cite{S-U-A}):
 \[ \begin{pmatrix}
 \dot{p_n} \\
 \dot{p_e} \\
@@ -243,43 +243,50 @@ w_e \\
 0
 \end{pmatrix}
 \]
-It essentially says that the angular roll rate $\dot{p}$, and the rate of change in altitude $\dot{h}$ are equivalent to the airspeed $V_a$ times the cosine and sine of the yaw angle $\psi$ plus the wind direction $w$. Note that aerodynamic forces acting on the aircraft body are removed from this equation to greatly simplify it. The equation assumes the aircraft maintains a steady altitude to model it like a dubins vehicle with a forward velocity and a turning rate. The airplane is then controlled by increasing or decreasing the veloticy and changing the turning rate. Below in Figure \ref{f8} is a plot of a dubins vehicle moving in a figure-eight pattern:
+It essentially says that the angular roll rate $\dot{p}$, and the rate of change in altitude $\dot{h}$ are equivalent to the airspeed $V_a$ times the cosine and sine of the yaw angle $\psi$ plus the wind direction $w$. Note that aerodynamic forces acting on the aircraft body are removed from this equation to greatly simplify it. The equation assumes the aircraft maintains a steady altitude to model it like a Dubins vehicle with a forward velocity and a turning rate. The airplane is then controlled by increasing or decreasing the veloticy and changing the turning rate. Below in Figure \ref{f8} is a plot of a Dubins vehicle moving in a figure-eight pattern:
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{dubins_fig8.jpg}
-\caption{Dubins vehicle programmed to move in a figure-eight pattern by holding a constant velocity and changing the sign of its turning rate at a specific time interval. An airplane at a constant forward velocity and altitude can be modeled in a similar fashion. Note this picture was taken from a project the author completed for CMPE 141.}
+\caption{Dubins vehicle programmed to move in a figure-eight pattern by holding a constant velocity and changing the sign of its turning rate at a specific time interval. An airplane at a constant forward velocity and altitude can be modeled in a similar fashion. Note this picture was taken from a project the author, Kodiak, completed for CMPE 141.}
 \label{f8}
 \end{figure}
-This idea is particularly useful for Unmanned Aerial Vehicles (UAVs), which do not perform aerobatic maneuvers and usually maintain a steady altitude to scan an area. Engineers can basically pretend their UAV is a dubins vehicle once it reaches its cruising altitude! We can then relate the turning rate along the yaw axis $\dot{\psi}$ to gravity, velocity, and the roll angle $\phi$ with the following equation (eq 9.14 in \cite{S-U-A}):
+This idea is particularly useful for Unmanned Aerial Vehicles (UAVs), which do not perform aerobatic maneuvers and usually maintain a steady altitude to scan an area. Engineers can basically pretend their UAV is a Dubins vehicle once it reaches its cruising altitude! We can then relate the rotation rate along the vertical axis $\dot{\psi}$ to gravity, velocity, and the roll angle $\phi$ with the following equation (eq 9.14 in \cite{S-U-A}):
 \[ \dot{\psi} = \frac{g}{V_a}tan(\phi) \]
-It is important because it gives us a direct relation from roll angle to yaw rate. This equation is similar to the steering wheel on a car - it is rolled left and right to make the car yaw left and right. In this case, the aircraft itself is the steering wheel rolling left and right to yaw back and forth. We now have everything we need to control a UAV like a dubins vehicle using the roll angle to modify turning rate, and the motor to adjust its speed.
+It is important because it gives us a direct relation from roll angle to turning rate. This equation is similar to the steering wheel on a car - it rolls left and right to make the car turn left and right. In this case, the aircraft itself is the steering wheel rolling left and right to change its heading. We now have everything we need to control a UAV like a Dubins vehicle using the roll angle to modify turning rate, and the motor to adjust its speed.
 
 \subsubsection{Aircraft Ground Control Stations}
-All information in this section was found in \cite{U-A-D}, chapter 8. A ground control station is something that can apply the dubins vehicle model as the UAV is in the air. As an operator plans the flight, the ground control software will calculate the turning rate (i.e. roll angle) required to follow the path. If the turning rate is unachievable, the software must notify the operator, or perform longer, wider maneuvers to correct for the error and follow the path as close as possible. This is one of many reasons why ground station are important tools for a UAVs. Their other purposes are to allow an operator to track/plan the mission, observe flight status, and pilot the aircraft. ``Depending upon range and type of mission (complexity of the UAV system), smaller UAVs are controlled via visual contact (manual real-time control), while the larger ones are equipped with a communication system (engage stored on-board flight plans)" (Sadraey, page 141). Some UAVs are not fully autonomous, so an operator must fly it using a laptop with ground control software. UAVs also have various sensors on them like a weapon position sensor, altimeter, airspeed sensor, intertial measurement unit (IMU), and many more. If the ground control station operator notices anything is acting funny, he can take full control and act accordingly.
+A ground control station is something that can apply the Dubins vehicle model as the UAV is in the air. As an operator plans the flight, the ground control software will calculate the turning rate (i.e. roll angle) required to follow the path. If the turning rate is unachievable, the software must notify the operator, or perform longer, wider maneuvers to correct for the error and follow the path as close as possible. This is one of many reasons why ground station are important tools for a UAVs. Their other purposes are to allow an operator to track/plan the mission, observe flight status, and pilot the aircraft. ``Depending upon range and type of mission (complexity of the UAV system), smaller UAVs are controlled via visual contact (manual real-time control), while the larger ones are equipped with a communication system (engage stored on-board flight plans)" (\cite{U-A-D}, p. 141). Some UAVs are not fully autonomous, so an operator must fly it using a laptop with ground control software. UAVs also have various sensors on them like a weapon position sensor, altimeter, airspeed sensor, intertial measurement unit (IMU), and many more. If the ground control station operator notices anything is working improperly, he can take full control and act accordingly.
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{groundControl.jpg}
-\caption{Diagram displaying and operator of a ground control station to pilot an aircraft. Most stations do not require the operator to sit in a cockpit-like seat, but the exaggeration is useful for a novice UAV enthusiast. This image was found in \cite{U-A-D}, page 142, Figure 8.1.}
+\caption{Diagram displaying and operator of a ground control station to pilot an aircraft. Most stations do not require the operator to sit in a cockpit-like seat, but the exaggeration is useful for a novice UAV enthusiast. \cite{U-A-D}, p. 142, Figure 8.1.}
 \label{gcDiagram}
 \end{figure}
-Normally, there are two operators to a ground control station; the vehicle flight operator and the mission payload operator. The flight operator is in charge of keeping the machine in the air, while the payload operator interfaces with other aircraft systems. This could be aiming and firing guns, taking weather data, or gathering recon information for teams on the ground. These operators play a crucial role because although the plane can fly mostly, or fully autonomously, ``most UAV losses are attributed to operator errors" (Sadraey, page 143). The operators must be comfortable when working with these expensive devices or else their state of mind will fatigue, and the chances of making a mistake increase. It is important to keep comfort in mind when desigining a ground control station.
+Normally, there are two operators to a ground control station; the vehicle flight operator and the mission payload operator. The flight operator is in charge of keeping the machine in the air, while the payload operator interfaces with other aircraft systems. This could be aiming and firing guns, taking weather data, or gathering recon information for teams on the ground. These operators play a crucial role because although the plane can fly mostly, or fully autonomously, ``most UAV losses are attributed to operator errors" (\cite{U-A-D}, p. 143). The operators must be comfortable when working with these expensive devices or else their state of mind will fatigue, and the chances of making a mistake increase. It is important to keep comfort in mind when desigining a ground control station.
 
-\subsubsection{Glider Soaring via Reinforcement Learning in the Field}
-All information in this section was found in \cite{GliderBirds}. One way to extend the flight time of a small, unmanned aircraft is to utilize thermals and updrafts similar to the way birds do. Physicists at UC San Diego figured out how to do exactly that by using reinforcement learning - a type of machine learning.
+\subsubsection{Glider Soaring via Reinforcement Learning in the Field \cite{GliderBirds}}
+One way to extend the flight time of a small, unmanned aircraft is to utilize thermals and updrafts similar to the way birds do. Physicists at UC San Diego figured out how to do exactly that by using reinforcement learning - a type of machine learning.
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{gliderAndBird.jpg}
-\caption{Here is one of the gliders used in the testing process flying in tandem with a seagull. The two both have the same attitude to achieve the most lift out of the thermal or updraft they are flying through. This image was found in \cite{gbArticle}.}
+\caption{Here is one of the gliders used in the testing process flying in tandem with a seagull. The two both have the same attitude because they are tracking thermals or updrafts in a similar manner. \cite{gbArticle}}
 \label{gliderAndBird}
 \end{figure}
-Reinforcement learning is essentially a way for a system to learn based on trial and error; if it preforms an action and things go well, it remembers that as a good situation, while on the other hand, poor situations from bad maneuvers are kept in the ``don't do again" list. The physicists started by simulating gliders in turbulent wind flow to find important parameters that improve navigation through a thermal. They then moved on to testing a real plane with a 2 meter wingspan. The plane was equipped with a flight controller running modified ArduPlane code to pilot the aircraft through updrafts. Researchers soon discovered that they needed to write algorithms to estimate ``environmental cues" to maneuver the glider in such a way to gain the most lift out of the environment. For example, when a pocket of greater lift is at a diagonal to the aircraft's forward heading, banking in a proper manner will generate more lift. This project intends to apply these properties to the Forever Flight aircraft to achieve a longer flight time when searching for wildfires.
+Reinforcement learning is essentially a way for a system to learn based on trial and error; if it preforms an action and things go well, it remembers that as a good choice, while on the other hand, poor situations from bad maneuvers are kept in the ``don't do again" list. The physicists started by simulating gliders in turbulent wind flow to find important parameters that improve navigation through a thermal. They then moved on to testing a real plane with a 2 meter wingspan. The plane was equipped with a flight controller running modified ArduPlane code to pilot the aircraft through updrafts. Researchers soon discovered that they needed to write algorithms to estimate ``environmental cues" to maneuver the glider in such a way to gain the most lift out of the environment. For example, when a pocket of greater lift is at a diagonal to the aircraft's forward heading, banking in a proper manner will generate more lift. This project intends to apply these properties to the Forever Flight aircraft to achieve a longer flight time when searching for wildfires.
 
 \subsection{Methods}
 \subsubsection{Choice of Aircraft Frame}
-For our UAV, the team decided to go with a glider style aircraft over a delta-wing style. We originally wanted to use a delta-wing because they are quick to build and durable. However, we learned that these characteristics should not be our main focus because they define what someone would want if they were going to crash a lot! Since we were creating a plane intended to fly forever, we realized that we should choose an efficient-flying plane that can use less power to remain in the air. We wanted a plane that can utilize updrafts or thermals to recharge its battery when running low, or to simply gain altitude free of charge. Therefore, a glider was an obvious choice.
+For our UAV, the team decided to go with a glider style aircraft over a delta-wing style. We originally wanted to use a delta-wing because they are quick to build and durable. However, we learned that these characteristics should not be our main focus because they define what someone would want if they were planning on a lot! Since we were creating a plane intended to fly forever, we realized that we should choose an efficient-flying plane that can use less power to remain in the air. We wanted a plane that can utilize updrafts or thermals to recharge its battery when running low, or to simply gain altitude free of charge. Therefore, a glider was an obvious choice. The team built a cardboard glider but did not have much luck flying it; the aircraft had unstable pitch oscillations despite the center of gravity being perfect. It ended up crashing, but served as a good tool to learn how to connect all of the electronics. (see Figure \ref{pitchOsc}). Fortunately around that time, we received funding and were able to purchase a well designed plane. It has a 2.6m wingspan to generate a ton of lift, and it has an optimal amount of area for solar cell placement. This new plane has no pitch oscillations and flies very well.
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3in]{pitch_elevPWM.jpg}
+\caption{This plot if of aircraft pitch (red) and elevator deflection (blue) in PWM over the flight duration. A decrease in elevator PWM equates to the control surface deflecting upward, i.e. it causes the aircraft to pitch up. Notice that only pitch up elevator was applied throughout the entire flight, however the plane pitched up and down. This made it clear that the plane was not flying properly. Rather than spending time debugging the issue, we purchased a new plane that was guaranteed to fly well.}
+\label{gliderAndBird}
+\end{figure}
 \subsubsection{Tasks to Connect the Electronics}
 The first step in connecting the control system is to verify that all electronics are working properly before inserting them into the plane. This involves testing the servos and motor in a simple RC configuration without any autopilot, then connecting them to the autopilot and ensuring manual control can be taken with the flip of a switch, and finally integrating the wireless data transmission system.
 \subsubsection{Simple RC Configuration}
@@ -295,7 +302,7 @@ Before motors and servos can be tested, the Taranis X9D RC transmitter must be b
 \item Power the receiver back on. The LED should turn solid GREEN after a few seconds indicating that it is connected to the transmitter. The two are now paired together under the selected model forever unless the receiver is re-bound to a different model.
 \end{enumerate}
 
-With that done, servos and motors can be controlled by plugging them into the outputs on the X8R. Power everything off and plug the ESC and four servos into the receiver (see Table \ref{x8rChannels}). Note that the two aileron servos are connected to only one channel using a servo Y-splitter. This causes the servos to behave opposite of one another as they would on any aircraft. The motor connects to the ESC via three wires with bullet connectors (see Figure \ref{motorToEsc}).
+With that done, servos and motors can be controlled by plugging them into the outputs on the X8R. Power everything off and plug the ESC and four servos into the receiver (see Table \ref{x8rChannels}). Note that the two aileron servos are connected to only one channel using a servo Y-splitter. This causes the servos to behave opposite of one another as they would on a typical aircraft. The motor connects to the ESC via three wires with bullet connectors (see Figure \ref{motorToEsc}).
 \begin{table}[h!]
 \caption{FrSky X8R Channels to Aircraft Control Surfaces}
 \centering
@@ -379,7 +386,7 @@ The next step is to configure the flight modes in mission planner so switches on
 \subsubsection{Flash Taranis X9D with FlightDeck Software}
 The FlighDeck software from Craft and Theory can serve as a backup ground station directly on the transmitter. It provides everything necessary to fly the aircraft such as heading, altitude, battery voltage, and attitude. Follow the steps below to flash FlighDeck onto the transmitter after purchasing it from Craft and Theory. Note that a 40\% discount is given on FlightDeck when it is purchased together with the TELEM cable described in the section above.
 \begin{enumerate}
-\item Download OpenTx Companion \href{https://www.open-tx.org}{here}.
+\item Download OpenTx Companion at\\ \href{https://www.open-tx.org}{https://www.open-tx.org}.
 	\begin{enumerate}
 	\item Run the companion executable.
 	\item Select radio type `FrSky Taranis X9D+' (or a different radio that is being used).
@@ -387,14 +394,14 @@ The FlighDeck software from Craft and Theory can serve as a backup ground statio
 	\end{enumerate}
 \item Download latest firmware version.
 	\begin{enumerate}
-	\item We used this one \href{https://www.open-tx.org/2019/01/06/opentx-2.2.3}{here}.
+	\item We used this one:\\ \href{https://www.open-tx.org/2019/01/06/opentx-2.2.3}{https://www.open-tx.org/2019/01/06/opentx-2.2.3}.
 	\end{enumerate}
 \item Put Taranis in bootloader mode by holding both horizontal trims inward and powering on.
 \item Connect Taranis to computer with mini-USB cable.
 \item Flash firmware to radio using OpenTx Companion's handy user interface.
 \item Navigate to SD card drive on the computer that the Taranis is plugged into. It is drive E:\textbackslash on my laptop. It contains folder such ad LOGS, MODELS, and SOUNDS.
 \item Copy all of these files and back them up in a safe location.
-\item Download the latest SD card version \href{https://downloads.open-tx.org/2.2/sdcard/opentx-x9d%2B/}{here}. % note the first % does not make a comment
+\item Download the latest SD card version at\\ \href{https://downloads.open-tx.org/2.2/sdcard/opentx-x9d%2B/}{https://downloads.open-tx.org/2.2/sdcard/opentx-x9d\%2B/}. % note the first % does not make a comment
 \item Extract the contents of the .zip folder into the root directory of the SD card (in my case, drive E:\textbackslash).
 \item Download FlightDeck.zip from the email confirmation when it was bought or from the Craft and Theory account created for the purchase.
 \item Extract the contents of the ``SDcard" folder directly into the root directory of the Taranis SD card (in my case, drive E:\textbackslash).
@@ -422,7 +429,7 @@ The FlighDeck software from Craft and Theory can serve as a backup ground statio
 \end{enumerate}
 
 \subsection{Mounting the Electronics in the Plane}
-Now with the electronics tried and tested, it is time for the moment we have all been waiting for - to stuff everything inside of the plane. When doing this, it is important to mount the flight controller and GPS as close to the aircraft's center of gravity as possible. It is also important to keep other data transmission antennas (like the GPS and Telemetry link antennas) far away from antoher to reduce noise generated between the two. Keep the plane's center of gravity in mind when finding a nice place for heavier equipment. It must balance on two points directly behind the leading edge of the wing, and preferrably be slightly nose heavy. Failure to do this will cause the plane to fly improperly and will likely ensue a crash.
+Now with the electronics tried and tested, it is time for the moment we have all been waiting for - to stuff everything inside of the plane. When doing this, it is important to mount the flight controller and GPS as close to the aircraft's center of gravity as possible. It is also important to keep other data transmission antennas (like the GPS and Telemetry link antennas) far away from antoher to reduce noise generated between the two. Keep the plane's center of gravity in mind when finding a nice place for heavier equipment. It must balance on two points 1/4 of the distance of the chord behind the leading edge of the wing, and preferrably be slightly nose heavy. Failure to do this will cause the plane to fly improperly and will likely ensue a crash.
 
 After mounting everything, power up the transmitter, connect the battery to the flight controller and test that all control surfaces move in the correct direction based on manual stick input. Then verify that the plane balances properly over its center of gravity. If it does not, shift something heavy (the battery works well) to correct this. Once all of these checks pass, the plane is ready for manual flight!
 
