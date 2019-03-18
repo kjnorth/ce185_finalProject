@@ -12,6 +12,7 @@
 }
 
 \begin{document}
+\sloppy
 
 \title{Telemetry, Control Systems, and Sensors on an Autonomous Aircraft}
 \author{Maxwell~Bradley, Kodiak~North, and Zane~Bradley}
@@ -38,7 +39,7 @@ Aircraft, Airplane, RC Airplane, UAV, Autonomous, Wildfire, Wildfire Detection, 
 \maketitle
 
 \tableofcontents 
-
+\newpage
 \section{Project Introduction}
 
 \IEEEPARstart{F}{orever} Flight is a persistent aerial monitoring system to detect wildfires in fire-prone areas. It will consist of a plane with a mounted IR camera to detect fires below and a flight controller capable of autopilot, guidable with GPS waypoints sent from a laptop computer on the ground. This project was named `Forever Flight' for its goal of never having to recharge its batteries, staying aloft and performing fire detection while the sun is up, charging back up from solar energy and our power regenerative mechanisms. 
@@ -48,13 +49,13 @@ This project was inspired by the recent California wildfires like the Camp Fire,
 % MAX B
 \section{Data Transfer}
 \subsection{Introduction}
-An important part of this project is the data transfer from the plane to the ground station. This transfer contains a huge amount of different kinds of data, such as fire detection stats, fire detection processing, GPS coordinates, and more. Getting this kind of information out of the plane can be challenging because of the flight controller's running overhead and varying transmission protocol versions. I will focus this section of the paper on the transfer of data between the in-flight aircraft and the ground control station.
+There is a large amount of information coming out of the aircraft at any time, transferred over telemetry. This transfer contains a huge amount of different kinds of data, such as fire detection stats, fire detection processing, GPS coordinates, and more. Getting this kind of information out of the plane can be challenging because of the flight controller's running overhead and varying transmission protocol versions. I will focus this section of the paper on the transfer of data between the in-flight aircraft and the ground control station.
 
 \subsection{Materials and Material Background}
 Many different components make up the data transmission path between the plane itself and the ground station. I will now discuss each of those components in detail.
 
 \subsubsection{Pixhawk Flight Controller}
-The Pixhawk flight controller is the main brain of the entire plane. It receives IR information from the downward facing IR sensor through a serial communication port (using the I2C protocol). The Pixhawk is where the majority of the data transfer work occurs in the second and third versions of the data transmission system design. It uses an overall system scheduler to decide when to call the MAVLink packet sending function. Within that MAVLink sending function, one of a large group of packets is selected and sent over whatever telemetry port MAVLink is configured to use.
+The flight controller is the main brain of the entire plane. It receives IR information from the downward facing IR sensor through a serial communication port (using the I2C protocol). The Pixhawk is where the majority of the data transfer work occurs in the second and third versions of the data transmission system design. It uses an overall system scheduler to decide when to call the MAVLink packet sending function. Within that MAVLink sending function, one of a large group of packets is selected and sent over whatever telemetry port MAVLink is configured to use.
 
 \subsubsection{MAVLink}
 MAVLink is a protocol commonly used between drones and ground stations. Most autopilots use MAVLink to both send and receive packets to and from the ground station. Its packet structure is described in the following table.
@@ -103,12 +104,15 @@ The majority of the substance for the ArduPlane module is contained in the libra
 
 \subsubsection{Telemetry Module}
 The team landed on using the 3DR Radio Telemetry Kit. This set of transmitters and receivers use the frequency 916MHz. The flight controller uses this link to send flight data. The ground station sends GPS coordinates for the plane to go to on over this link as well. A picture of this module is below.
+
 % MAX PICTURE 2
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{telemmodule.jpg}
+\cite{telemModule}
 \caption{916MHz telemetry module}
+
 \label{mavStruct}
 \end{figure}
 
@@ -155,7 +159,7 @@ I changed existing MAVLink definitions rather than create new ones because of th
 \hspace*{0cm}
 \centering
 \includegraphics[width=3in]{message.png}
-\caption{Sending function common to all Ardupilot vehicles}
+\caption{XML definitions of MAVLink packets}
 \label{fallthrough}
 \end{figure}
 
@@ -183,7 +187,19 @@ It didn't make sense to spend a lot of time designing a system where the Teensy 
 \label{version2}
 \end{figure}
 
-After the flight controller became the center of data processing and transmission, the design process began anew. The first important thing to do was to get a good understanding all of the underlying code for data transmission in the ArduPilot framework. After tracking down the control flow through the different files which eventually ended in in the library file that all ArduPilot vehicles used, the next step was to add a particular message to the common.xml file which contained the MAVLink message definitions. 
+While this new set up removed complexity from the system, it placed a lot more stress on the flight controller. Instead of just flying the plane and keeping the control systems in check, it had to do image processing work for the IR camera. To reduce the stress on the flight controller, we decided to place the Teensy micro back on board. It would be in charge of performing all fire detection. The flight controller would listen on a serial port for a signal from the Teensy for whether a fire was detected. The flight controller's only added load would then only be to send out one extra MAVLink packet and listen on a serial port. This is far less stressful than trying to squeeze image processing into an already tightly scheduled system. The final design layout is below.
+
+
+% MAX PICTURE 8
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3in]{Version3.png}
+\caption{Final design}
+\label{version3}
+\end{figure}
+
+After the two computing devices had their roles clearly set, the design process began anew. The first important thing to do was to get a good understanding all of the underlying code for data transmission in the ArduPilot framework. After tracking down the control flow through the different files which eventually ended in in the library file that all ArduPilot vehicles used, the next step was to add a particular message to the common.xml file which contained the MAVLink message definitions. 
 
 Due to a parameter problem that I will cover in-depth in the problems part of this discussion, I found it necessary to overwrite one of the existing MAVLink definitions. The HIL\_STATE message with ID 90  was selected because it had been replaced by another message and was no longer in use. This message was overwritten with a custom packet that contained fire detection data. This packet would only be sent when the sensing apparatus detected a fire. The simple control flow of this setup is as follows.
 % MAX PICTURE 8
@@ -571,7 +587,14 @@ Max would like to thank Precision Hawk for giving us around two thousand dollars
 \bibitem{Pixhawk basics}
 ``Pixhawk 4," Basic Concepts · PX4 User Guide. [Online]. Available: https://docs.px4.io/en/flight\_controller/pixhawk4.html. [Accessed: 06-Mar-2019].
 \bibitem{Teensy info}
-``Teensy v3.1 - 32 bit arduino-compatible microcontroller board," Velleman Spotlight. [Online]. Available: https://www.velleman.eu/products/view?id=420178\&country=be\&lang=en. [Accessed: 06-Mar-2019].
+``Teensy v3.1 - 32 bit arduino-compatible microcontroller board," Velleman Spotlight. [Online]. Available: 
+https://www.velleman.eu/products/view\linebreak?id=420178\&country=be\&lang=en. [Accessed: 06-Mar-2019].
+
+\bibitem{telemModule}
+
+
+``Banggood.com, “3DR Radio Telemetry Kit With Case 433MHZ 915MHZ For MWC APM PX4 Pixhawk for FPV RC Airplane RC Toys \& Hobbies from Toys Hobbies and Robot on banggood.com,” www.banggood.com. [Online]. Available: https://bit.ly/2JisfKa [Accessed: 18-Mar-2019].
+
 
 % Kodiak's citations
 \bibitem{S-U-A}
