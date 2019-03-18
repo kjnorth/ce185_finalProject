@@ -5,10 +5,10 @@
 \usepackage{float}
 \usepackage[hidelinks]{hyperref}
 \hypersetup{% this is so dank I've been trying to do this FOREVER
-  colorlinks=true,% all links are colored and not outlined
-  linkcolor=black,% hyperlink (PDF internal links like in toc) colors will be black
-  urlcolor=blue,
-  citecolor=black
+colorlinks=true,% all links are colored and not outlined
+linkcolor=black,% hyperlink (PDF internal links like in toc) colors will be black
+urlcolor=blue,
+citecolor=black
 }
 
 \begin{document}
@@ -93,7 +93,7 @@ The start frame transmission is the hex character set 0xFE, which tells the grou
 MAVLink message definitions exist in the common.xml file, where the message title and its payloads are all declared.
 
 The most important part of this packet is the message id, the 5th byte in the index. This byte signals which particular MAVLink message the incoming data corresponds to. Every message coming in indexes to one of the messages in the common.xml file. For instance, several times a second a `heartbeat' message is sent from the plane to the ground station. This message is declared in the common.xml file as having ID 0. When the ground station receives this message, it reads that xml file, looking for a message definition that matches the incoming ID. When it finds it, it interprets the payload attached to the MAVLink message as the attributes associated with the message definition in the xml file. 
-The autopilot that was chosen for this project uses the MAVLink protocol to communicate with the ground station. During my time as the data transmission engineer, I have become very familar with this protocol.
+The autopilot that was chosen for this project uses the MAVLink protocol to communicate with the ground station. During my time as the data transmission engineer, I have become very familiar with this protocol.
 
 \subsubsection{ArduPilot}
 After looking at all the free and open source autopilots on the market, the team selected ArduPilot. This firmware can be run on a variety of different platforms: there is an ArduSub, an ArduCopter, an ArduTractor, and obviously an ArduPlane. The flight controller for this project uses the ArduPlane version. 
@@ -201,7 +201,7 @@ While this new set up removed complexity from the system, it placed a lot more s
 
 After the two computing devices had their roles clearly set, the design process began anew. The first important thing to do was to get a good understanding all of the underlying code for data transmission in the ArduPilot framework. After tracking down the control flow through the different files which eventually ended in in the library file that all ArduPilot vehicles used, the next step was to add a particular message to the common.xml file which contained the MAVLink message definitions. 
 
-Due to a parameter problem that I will cover in-depth in the problems part of this discussion, I found it necessary to overwrite one of the existing MAVLink definitions. The HIL\_STATE message with ID 90  was selected because it had been replaced by another message and was no longer in use. This message was overwritten with a custom packet that contained fire detection data. This packet would only be sent when the sensing apparatus detected a fire. The simple control flow of this setup can be found in figure ~\ref{sending}.
+Due to a parameter problem that I will cover in-depth in the problems part of this discussion, I found it necessary to overwrite one of the existing MAVLink definitions. The HIL\_STATE message with ID 90 was selected because it had been replaced by another message and was no longer in use. This message was overwritten with a custom packet that contained fire detection data. This packet would only be sent when the sensing apparatus detected a fire. The simple control flow of this setup can be found in figure ~\ref{sending}.
 
 % MAX PICTURE 9
 \begin{figure}[h!]
@@ -235,7 +235,7 @@ The changing of this protocol is badly documented on the ArduPilot website. Even
 An added problem of working with this flight controller is the time and processing constraints that adding a custom bit of functionality to an already extremely overtasked system come with. However, by keeping subroutines short, it was possible to add a good amount of data collecting and transmission software to an already built system.
 
 \subsection{Data Transfer Conclusion}
-Data transmission software is essential to pulling real time data that closely reflects and explains the events that occured during flight. Even though the open source autopilot is incredibly difficult to parse through and overall not very well written by industry computer science standards, it can be manipulated to add custom MAVLink functionality. Once the difficultly of working with different transmission protocols over several different programming languges is overcome, data transfer's extreme value can be truly realized. 
+Data transmission software is essential to pulling real time data that closely reflects and explains the events that occurred during flight. Even though the open source autopilot is incredibly difficult to parse through and overall not very well written by industry computer science standards, it can be manipulated to add custom MAVLink functionality. Once the difficultly of working with different transmission protocols over several different programming languages is overcome, data transfer's extreme value can be truly realized. 
 
 % Kodiak
 \section{Control System}
@@ -248,7 +248,7 @@ This section focuses on creating a model for guidance and path following. Using 
 \dot{p_n} \\
 \dot{p_e} \\
 \dot{h}
-\end{pmatrix}  
+\end{pmatrix} 
 = V_a \begin{pmatrix}
 cos(\psi) \\
 sin(\psi) \\
@@ -260,7 +260,7 @@ w_e \\
 0
 \end{pmatrix}
 \]
-It essentially says that the angular roll rate $\dot{p}$, and the rate of change in altitude $\dot{h}$ are equivalent to the airspeed $V_a$ times the cosine and sine of the yaw angle $\psi$ plus the wind direction $w$. Note that aerodynamic forces acting on the aircraft body are removed from this equation to greatly simplify it. The equation assumes the aircraft maintains a steady altitude to model it like a Dubins vehicle with a forward velocity and a turning rate. The airplane is then controlled by increasing or decreasing the veloticy and changing the turning rate. Below in Figure \ref{f8} is a plot of a Dubins vehicle moving in a figure-eight pattern:
+It essentially says that the angular roll rate $\dot{p}$, and the rate of change in altitude $\dot{h}$ are equivalent to the airspeed $V_a$ times the cosine and sine of the yaw angle $\psi$ plus the wind direction $w$. Note that aerodynamic forces acting on the aircraft body are removed from this equation to greatly simplify it. The equation assumes the aircraft maintains a steady altitude to model it like a Dubins vehicle with a forward velocity and a turning rate. The airplane is then controlled by increasing or decreasing the velocity and changing the turning rate. Below in Figure \ref{f8} is a plot of a Dubins vehicle moving in a figure-eight pattern:
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
@@ -273,7 +273,7 @@ This idea is particularly useful for Unmanned Aerial Vehicles (UAVs), which do n
 It is important because it gives us a direct relation from roll angle to turning rate. This equation is similar to the steering wheel on a car - it rolls left and right to make the car turn left and right. In this case, the aircraft itself is the steering wheel rolling left and right to change its heading. We now have everything we need to control a UAV like a Dubins vehicle using the roll angle to modify turning rate, and the motor to adjust its speed.
 
 \subsubsection{Aircraft Ground Control Stations}
-A ground control station is something that can apply the Dubins vehicle model as the UAV is in the air. As an operator plans the flight, the ground control software will calculate the turning rate (i.e. roll angle) required to follow the path. If the turning rate is unachievable, the software must notify the operator, or perform longer, wider maneuvers to correct for the error and follow the path as close as possible. This is one of many reasons why ground station are important tools for a UAVs. Their other purposes are to allow an operator to track/plan the mission, observe flight status, and pilot the aircraft. ``Depending upon range and type of mission (complexity of the UAV system), smaller UAVs are controlled via visual contact (manual real-time control), while the larger ones are equipped with a communication system (engage stored on-board flight plans)" (\cite{U-A-D}, p. 141). Some UAVs are not fully autonomous, so an operator must fly it using a laptop with ground control software. UAVs also have various sensors on them like a weapon position sensor, altimeter, airspeed sensor, intertial measurement unit (IMU), and many more. If the ground control station operator notices anything is working improperly, he can take full control and act accordingly.
+A ground control station is something that can apply the Dubins vehicle model as the UAV is in the air. As an operator plans the flight, the ground control software will calculate the turning rate (i.e. roll angle) required to follow the path. If the turning rate is unachievable, the software must notify the operator, or perform longer, wider maneuvers to correct for the error and follow the path as close as possible. This is one of many reasons why ground station are important tools for a UAVs. Their other purposes are to allow an operator to track/plan the mission, observe flight status, and pilot the aircraft. ``Depending upon range and type of mission (complexity of the UAV system), smaller UAVs are controlled via visual contact (manual real-time control), while the larger ones are equipped with a communication system (engage stored on-board flight plans)" (\cite{U-A-D}, p. 141). Some UAVs are not fully autonomous, so an operator must fly it using a laptop with ground control software. UAVs also have various sensors on them like a weapon position sensor, altimeter, airspeed sensor, inertial measurement unit (IMU), and many more. If the ground control station operator notices anything is working improperly, he can take full control and act accordingly.
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
@@ -281,7 +281,7 @@ A ground control station is something that can apply the Dubins vehicle model as
 \caption{Diagram displaying and operator of a ground control station to pilot an aircraft. Most stations do not require the operator to sit in a cockpit-like seat, but the exaggeration is useful for a novice UAV enthusiast. \cite{U-A-D}, p. 142, Figure 8.1.}
 \label{gcDiagram}
 \end{figure}
-Normally, there are two operators to a ground control station; the vehicle flight operator and the mission payload operator. The flight operator is in charge of keeping the machine in the air, while the payload operator interfaces with other aircraft systems. This could be aiming and firing guns, taking weather data, or gathering recon information for teams on the ground. These operators play a crucial role because although the plane can fly mostly, or fully autonomously, ``most UAV losses are attributed to operator errors" (\cite{U-A-D}, p. 143). The operators must be comfortable when working with these expensive devices or else their state of mind will fatigue, and the chances of making a mistake increase. It is important to keep comfort in mind when desigining a ground control station.
+Normally, there are two operators to a ground control station; the vehicle flight operator and the mission payload operator. The flight operator is in charge of keeping the machine in the air, while the payload operator interfaces with other aircraft systems. This could be aiming and firing guns, taking weather data, or gathering recon information for teams on the ground. These operators play a crucial role because although the plane can fly mostly, or fully autonomously, ``most UAV losses are attributed to operator errors" (\cite{U-A-D}, p. 143). The operators must be comfortable when working with these expensive devices or else their state of mind will fatigue, and the chances of making a mistake increase. It is important to keep comfort in mind when designing a ground control station.
 
 \subsubsection{Glider Soaring via Reinforcement Learning in the Field \cite{GliderBirds}}
 One way to extend the flight time of a small, unmanned aircraft is to utilize thermals and updrafts similar to the way birds do. Physicists at UC San Diego figured out how to do exactly that by using reinforcement learning - a type of machine learning.
@@ -351,19 +351,19 @@ Now that everything is connected, follow these steps to center servos and test s
 \begin{enumerate}
 \item Ensure the propellers is OFF of the motor shaft, and the transmitter is powered off.
 \item Turn on the transmitter.
-	\begin{enumerate}
-	\item Ensure all switches are in default position and throttle position is at its minimum (default settings on the X9D will cause it to yell at you if these constraints are not met).
-	\end{enumerate}
+\begin{enumerate}
+\item Ensure all switches are in default position and throttle position is at its minimum (default settings on the X9D will cause it to yell at you if these constraints are not met).
+\end{enumerate}
 \item Plug the battery into the ESC.
-	\begin{enumerate}
-	\item The servos will center right when they receive power for the first time. Make sure that the trim on all channels is centered.
-	\end{enumerate}
+\begin{enumerate}
+\item The servos will center right when they receive power for the first time. Make sure that the trim on all channels is centered.
+\end{enumerate}
 \item Wait for the motor startup sound sequence to play.
 \item Move sticks on the transmitter and observe control behavior.
-	\begin{enumerate}
-	\item Note that servo direction can be flipped in the transmitter settings, so their directions are not too important at this point.
-	\item If the motor spins in the wrong direction when the throttle is applied, switch any two of the three wires that connect it to the ESC.
-	\end{enumerate}
+\begin{enumerate}
+\item Note that servo direction can be flipped in the transmitter settings, so their directions are not too important at this point.
+\item If the motor spins in the wrong direction when the throttle is applied, switch any two of the three wires that connect it to the ESC.
+\end{enumerate}
 \end{enumerate}
 
 In this stage, it is also wise to manually calibrate the ESC so it recognizes this specific transmitter's maximum and minimum PWM throttle outputs. Follow the steps below.
@@ -372,14 +372,14 @@ In this stage, it is also wise to manually calibrate the ESC so it recognizes th
 \item Ensure the propellers is OFF of the motor shaft, and the transmitter is powered off.
 \item Place the throttle stick to its maximum position.
 \item Plug the battery into the ESC.
-	\begin{enumerate}
-	\item It will play a special sequence to indicate that maximum throttle has been detected.
-	\end{enumerate}
+\begin{enumerate}
+\item It will play a special sequence to indicate that maximum throttle has been detected.
+\end{enumerate}
 \item Place the throttle stick to its minimum position within 2 seconds.
-	\begin{enumerate}
-	\item The ESC will beep and play its normal startup sequence.
-	\item If the normal startup sequence does not play and instead the ESC beeps abnormally, repeat this process and be sure to move the throttle stick to the minimum position within 2 seconds!
-	\end{enumerate}
+\begin{enumerate}
+\item The ESC will beep and play its normal startup sequence.
+\item If the normal startup sequence does not play and instead the ESC beeps abnormally, repeat this process and be sure to move the throttle stick to the minimum position within 2 seconds!
+\end{enumerate}
 \item Calibration is now complete.
 \end{enumerate}
 
@@ -404,15 +404,15 @@ The next step is to configure the flight modes in mission planner so switches on
 The FlighDeck software from Craft and Theory can serve as a backup ground station directly on the transmitter. It provides everything necessary to fly the aircraft such as heading, altitude, battery voltage, and attitude. Follow the steps below to flash FlighDeck onto the transmitter after purchasing it from Craft and Theory. Note that a 40\% discount is given on FlightDeck when it is purchased together with the TELEM cable described in the section above.
 \begin{enumerate}
 \item Download OpenTx Companion at\\ \href{https://www.open-tx.org}{https://www.open-tx.org}.
-	\begin{enumerate}
-	\item Run the companion executable.
-	\item Select radio type `FrSky Taranis X9D+' (or a different radio that is being used).
-	\item Check the `lua' box and ensure the `sql5font' box is unchecked.
-	\end{enumerate}
+\begin{enumerate}
+\item Run the companion executable.
+\item Select radio type `FrSky Taranis X9D+' (or a different radio that is being used).
+\item Check the `lua' box and ensure the `sql5font' box is unchecked.
+\end{enumerate}
 \item Download latest firmware version.
-	\begin{enumerate}
-	\item We used this one:\\ \href{https://www.open-tx.org/2019/01/06/opentx-2.2.3}{https://www.open-tx.org/2019/01/06/opentx-2.2.3}.
-	\end{enumerate}
+\begin{enumerate}
+\item We used this one:\\ \href{https://www.open-tx.org/2019/01/06/opentx-2.2.3}{https://www.open-tx.org/2019/01/06/opentx-2.2.3}.
+\end{enumerate}
 \item Put Taranis in bootloader mode by holding both horizontal trims inward and powering on.
 \item Connect Taranis to computer with mini-USB cable.
 \item Flash firmware to radio using OpenTx Companion's handy user interface.
@@ -422,31 +422,31 @@ The FlighDeck software from Craft and Theory can serve as a backup ground statio
 \item Extract the contents of the .zip folder into the root directory of the SD card (in my case, drive E:\textbackslash).
 \item Download FlightDeck.zip from the email confirmation when it was bought or from the Craft and Theory account created for the purchase.
 \item Extract the contents of the ``SDcard" folder directly into the root directory of the Taranis SD card (in my case, drive E:\textbackslash).
-	\begin{enumerate}
-	\item Make sure to merge the contents of these folders and replace/overwrite any file already on the SD card.
-	\end{enumerate}
+\begin{enumerate}
+\item Make sure to merge the contents of these folders and replace/overwrite any file already on the SD card.
+\end{enumerate}
 \item Manually backup all models currently on the X9D to its SD card before proceeding to avoid any potential frustration.
-	\begin{enumerate}
-	\item Long press `Enter' over each model and select `Backup'.
-	\end{enumerate}
+\begin{enumerate}
+\item Long press `Enter' over each model and select `Backup'.
+\end{enumerate}
 \item Add the preconfigured FlightDeck model to the transmitter using OpenTx Companion.
-	\begin{enumerate}
-	\item Open the X9D+.otx file that came with FlightDeck in OpenTx Companion.
-	\item Press the ``Write Models and Settings to Radio" button.
-	\end{enumerate}
+\begin{enumerate}
+\item Open the X9D+.otx file that came with FlightDeck in OpenTx Companion.
+\item Press the ``Write Models and Settings to Radio" button.
+\end{enumerate}
 \item Unplug the USB cable from the Taranis, select `Exit', and confirm. The radio will now boot up normally.
 \item Discover new sensors!
-	\begin{enumerate}
-	\item In Mission Planner, navigate to the full parameter list and set ``SERIAL1" = 10 for FrSky SPORT Passthrough, OpenTx.
-	\item Disconnect from Mission Planner and unplug the micro USB cable.
-	\item Power the electronics with a battery and wait for the Pixhawk startup sequence to play.
-	\item Navigate to the Telemetry screen on the X9D and select the ``discover new sensors" button.
-	\item Notice that GPS and CELS (battery lowest cell voltage), amongst others are now available.
-	\end{enumerate}
+\begin{enumerate}
+\item In Mission Planner, navigate to the full parameter list and set ``SERIAL1" = 10 for FrSky SPORT Passthrough, OpenTx.
+\item Disconnect from Mission Planner and unplug the micro USB cable.
+\item Power the electronics with a battery and wait for the Pixhawk startup sequence to play.
+\item Navigate to the Telemetry screen on the X9D and select the ``discover new sensors" button.
+\item Notice that GPS and CELS (battery lowest cell voltage), amongst others are now available.
+\end{enumerate}
 \end{enumerate}
 
 \subsection{Mounting the Electronics in the Plane}
-Now with the electronics tried and tested, it is time for the moment we have all been waiting for - to stuff everything inside of the plane. When doing this, it is important to mount the flight controller and GPS as close to the aircraft's center of gravity as possible. It is also important to keep other data transmission antennas (like the GPS and Telemetry link antennas) far away from antoher to reduce noise generated between the two. Keep the plane's center of gravity in mind when finding a nice place for heavier equipment. It must balance on two points 1/4 of the distance of the chord behind the leading edge of the wing, and preferrably be slightly nose heavy. Failure to do this will cause the plane to fly improperly and will likely ensue a crash.
+Now with the electronics tried and tested, it is time for the moment we have all been waiting for - to stuff everything inside of the plane. When doing this, it is important to mount the flight controller and GPS as close to the aircraft's center of gravity as possible. It is also important to keep other data transmission antennas (like the GPS and Telemetry link antennas) far away from another to reduce noise generated between the two. Keep the plane's center of gravity in mind when finding a nice place for heavier equipment. It must balance on two points 1/4 of the distance of the chord behind the leading edge of the wing, and preferably be slightly nose heavy. Failure to do this will cause the plane to fly improperly and will likely ensue a crash.
 
 After mounting everything, power up the transmitter, connect the battery to the flight controller and test that all control surfaces move in the correct direction based on manual stick input. Then verify that the plane balances properly over its center of gravity. If it does not, shift something heavy (the battery works well) to correct this. Once all of these checks pass, the plane is ready for manual flight!
 
@@ -457,7 +457,7 @@ The fire detection system onboard the aircraft scans a stream of images for sign
 
 \subsection{Comparison of Techniques} \label{fire_comparison_section}
 \subsubsection{Human Observation}
-There are many tried and true methods for detecting wildfires. The oldest, and most simple method is to station human beings in watch towers in high elevation positions, such as the ridge lines of mountains. This method is not prone to false positives, as human beings are very good at identifying a fire once they see it. Human beings can detect fire through many senses, such as visible smoke, visible flames, burning smells, and changes in temperature or humidity. However, human vision has a limited range. A large number of watch towers and human watchers are necessary to monitor a small area. Also, the logistics of watch towers are complex. New watch towers take time to construct, the system is not mobile. The system also places human beings in danger. A fire could easily spread after detection but before being extinguished, and burn down the watch tower.  
+There are many tried and true methods for detecting wildfires. The oldest, and most simple method is to station human beings in watch towers in high elevation positions, such as the ridge lines of mountains. This method is not prone to false positives, as human beings are very good at identifying a fire once they see it. Human beings can detect fire through many senses, such as visible smoke, visible flames, burning smells, and changes in temperature or humidity. However, human vision has a limited range. A large number of watch towers and human watchers are necessary to monitor a small area. Also, the logistics of watch towers are complex. New watch towers take time to construct, the system is not mobile. The system also places human beings in danger. A fire could easily spread after detection but before being extinguished, and burn down the watch tower. 
 
 \subsubsection{Manned Aerial Observation}
 A more recent technique uses human observers inside large manned aircraft. Unlike the watch tower method, this system keeps human beings out of harms way. This system also has the advantage of being mobile, as a plane can be deployed anywhere. The range of this method is also less limited, as a plane cover an area much larger than a human's vision in a single flight. Large enough planes can even be equipped to combat fires when they are detected. 
@@ -472,7 +472,7 @@ Satellite imagery has another crucial downside: low resolution. Satellites orbit
 \subsubsection{Optical Camera Imagery}
 Many real world fire detection systems employ optical cameras. These operate in much the same way as a human observer, and are positioned in high elevation positions. They look horizontally over a region, and the resulting images can be digitally processed, or manually monitored for signs of smoke and fire. A major downside of this approach is the horizontal camera orientation. In densely forested areas, a fire may be obscured by trees while it is small. Optical imagery also cannot be used at night, as smoke is nearly impossible to distinguish in the dark. 
 
-The figure below demonstrates an optical image processing algorithm produced by Cruz et al. \cite{ffdi}. For each pixel of an input image, the algorithm computes the probability that the pixel is part of a fire.  
+The figure below demonstrates an optical image processing algorithm produced by Cruz et al. \cite{ffdi}. For each pixel of an input image, the algorithm computes the probability that the pixel is part of a fire. 
 
 \begin{figure}[H]
 \centering
@@ -491,7 +491,7 @@ According to Planck's Law, all matter radiates energy in proportion to its tempe
 \begin{figure}[h]
 \centering
 \includegraphics[width=3.5in]{em_spectrum.png}
-\caption{The electromagnetic spectrum. Radiation between wavelengths of 1$\mu$m and 1000$\mu$m is classified as Infrared Radation}
+\caption{The electromagnetic spectrum. Radiation between wavelengths of 1$\mu$m and 1000$\mu$m is classified as Infrared Radiation}
 \label{em_spectrum_image}
 \end{figure}
 
@@ -550,7 +550,7 @@ Upon receiving a fire size message, the main microcontroller transmits
 the current GPS location, current time, and fire size value to the ground station.
 
 \subsection{Limitations and Problems}
-The minimum detectable fire size is a crucial metric of our system. The smaller it is, the smaller the fire will be when first responders arrive. The smaller it is, the easier it is to suppress the fire. This metric depends on the cruising altitude of the aircraft, and the resolution of the camera. This system was only tested at heights below 400 feet, due to FAA regulations. In practice, the cruising altitude should be higher, to mitigate collision with trees or terrain. This negatively affects the minimum detectable fire size. This can be compensated for with a higher resolution camera, however thermal cameras rapidly increase in price with increasing resolution. In short, using higher resolution thermal cameras is not a scalable solution. Using regular optical cameras is one solution, but these have many drawbacks, as discussed in section \ref{fire_comparison_section}.  
+The minimum detectable fire size is a crucial metric of our system. The smaller it is, the smaller the fire will be when first responders arrive. The smaller it is, the easier it is to suppress the fire. This metric depends on the cruising altitude of the aircraft, and the resolution of the camera. This system was only tested at heights below 400 feet, due to FAA regulations. In practice, the cruising altitude should be higher, to mitigate collision with trees or terrain. This negatively affects the minimum detectable fire size. This can be compensated for with a higher resolution camera, however thermal cameras rapidly increase in price with increasing resolution. In short, using higher resolution thermal cameras is not a scalable solution. Using regular optical cameras is one solution, but these have many drawbacks, as discussed in section \ref{fire_comparison_section}. 
 Our fire detection system produces relatively simple information. It records its current GPS location and the current time whenever it flies over a fire. However, there are many more characteristics about a fire that are relevant to fire fighters. 
 
 Fire fighters are interested in modeling fires. The location of the starting point of a fire is nice to know, but it is equally important to know what the fire will do after it has started. Fire models attempt to describe the intensity, forward rate of spread, perimeter growth rate, area of perimeter, and shape of perimeter. 
@@ -574,10 +574,10 @@ These models depend on information about the fire, such as location, the moistur
 It is important to keep in mind that models are only an approximation of true fire behavior, and are inherently inaccurate. Fires are also difficult and dangerous to reproduce in a laboratory setting. A large, realistic wildfire would never be purposely started for the sake of measurement. This means that data on wildfires is hard to come by, and of low quality. A model may also be inaccurate if certain assumptions are broken. Many models assume that the region on fire is composed of a single fuel source, which is uniformly dense.
 
 \subsection{Future Work}
-Given these additional fire characteristics, it is only natural that our project's scope should expand and provide additional information, beyond the location of a fire's starting point. Image recognition techniques could be used to measure the area of land covered by a fire. Similarly, image recognition could be used to describe the shape of a fire. This information is useful to fire fighters, because it allows them to predict the rate of spread, and the direction of travel of a fire. It will likely take first responders a non-trivial amount of time to arrive at the scene of a fire, and this information gives them some idea of what to expect. A fire will grow in the meantime between detection and fire fighter response.  
+Given these additional fire characteristics, it is only natural that our project's scope should expand and provide additional information, beyond the location of a fire's starting point. Image recognition techniques could be used to measure the area of land covered by a fire. Similarly, image recognition could be used to describe the shape of a fire. This information is useful to fire fighters, because it allows them to predict the rate of spread, and the direction of travel of a fire. It will likely take first responders a non-trivial amount of time to arrive at the scene of a fire, and this information gives them some idea of what to expect. A fire will grow in the meantime between detection and fire fighter response. 
 
 \section{Conclusion}
-We now have a control system implemented and ready to be simulated. We do not want to immediately jump into autonomous mode becuase if it does not work as we expect, the plane might crash, or fly far away and never return. For this reason, we are designing a Software in the Loop (SITL) simulation to detect any bugs in the autonomous code. One has been found already where if the aircraft is launched in the opposite direction from its first GPS waypoint, it will never turn around! The ArduPlane code tries to fly the plane around the entire world to hit the waypoint, but since our plane does not have enough battery life to make the journey, it would crash. Future work includes more simulation, and testing the autopilot in real time once we feel we have found all the bugs and we know how to avoid them.
+We now have a control system implemented and ready to be simulated. We do not want to immediately jump into autonomous mode because if it does not work as we expect, the plane might crash, or fly far away and never return. For this reason, we are designing a Software in the Loop (SITL) simulation to detect any bugs in the autonomous code. One has been found already where if the aircraft is launched in the opposite direction from its first GPS waypoint, it will never turn around! The ArduPlane code tries to fly the plane around the entire world to hit the waypoint, but since our plane does not have enough battery life to make the journey, it would crash. Future work includes more simulation, and testing the autopilot in real time once we feel we have found all the bugs and we know how to avoid them.
 
 \appendices
 \section*{Appendix}
@@ -657,7 +657,7 @@ I. Bosch, A. Serrano and L. Vergara, Multisensor Network System for Wildfire Det
 is currently a senior at the University of California - Santa Cruz. He is majoring in Robotics Engineering, and looking for a career in the new drone industry once he graduates. On his free time, Kodiak enjoys surfing, repairing his truck, and flying his RC race quadcopter.
 
 \textbf{Maxwell Bradley}
-is a senior at UC Santa Cruz. He is a computer engineering major speciailizing in computer system, which dabbles in both hardware and software. He will be continuing into the computer engineering MS program here at UCSC after he completes his bachelors, and hopes to work for himself after he graduates. When he isn't laboring over some piece of code, he enjoys distance running, playing the guitar, and checking out breweries.
+is a senior at UC Santa Cruz. He is a computer engineering major specializing in computer system, which dabbles in both hardware and software. He will be continuing into the computer engineering MS program here at UCSC after he completes his bachelors, and hopes to work for himself after he graduates. When he isn't laboring over some piece of code, he enjoys distance running, playing the guitar, and checking out breweries.
 
 % Zane's bio
 \textbf{Zane Bradley}
@@ -687,3 +687,4 @@ is a 4th year Computer Engineering student at the University of California, Sant
 %\enlargethispage{-5in}
 
 \end{document}
+
