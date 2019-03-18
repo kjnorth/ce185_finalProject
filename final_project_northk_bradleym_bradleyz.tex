@@ -153,7 +153,7 @@ Figure ~\ref{fallthrough} is the fallback function at the end of the try\_send\_
 \end{figure}
 
 By editing code in either the library try\_send\_message function or the ArduPlane specific try\_send\_message function, I as able to make changes to the MAVLink messages that were being sent to the ground station. 
-I changed existing MAVLink definitions rather than create new ones because of the difficulty in changing the MAVLink protocol version from version 1.0 to version 2.0 (please view the problems section for more information on this issue). I started by selecting messages to overwrite in the common.xml file. An example of the XML code can be found in figure ~\ref{fallthrough}.
+I changed existing MAVLink definitions rather than create new ones because of the difficulty in changing the MAVLink protocol version from version 1.0 to version 2.0 (please view the problems section for more information on this issue). I started by selecting messages to overwrite in the common.xml file. An example of the XML code can be found in figure ~\ref{xml}.
 
 
 \begin{figure}[h!]
@@ -161,7 +161,7 @@ I changed existing MAVLink definitions rather than create new ones because of th
 \centering
 \includegraphics[width=3in]{message.png}
 \caption{XML definitions of MAVLink packets}
-\label{fallthrough}
+\label{xml}
 \end{figure}
 
 \subsubsection{Design Process}
