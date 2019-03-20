@@ -575,6 +575,19 @@ It is important to keep in mind that models are only an approximation of true fi
 \subsection{Future Work}
 Given these additional fire characteristics, it is only natural that our project's scope should expand and provide additional information, beyond the location of a fire's starting point. Image recognition techniques could be used to measure the area of land covered by a fire. Similarly, image recognition could be used to describe the shape of a fire. This information is useful to fire fighters, because it allows them to predict the rate of spread, and the direction of travel of a fire. It will likely take first responders a non-trivial amount of time to arrive at the scene of a fire, and this information gives them some idea of what to expect. A fire will grow in the meantime between detection and fire fighter response. 
 
+% Grady
+\section{Solar}
+In the interest of maximizing our flight time, we have decided to mount solar panels on the wings of our plane. This will provide additional power to the motor, and result in less power being drawn from the batteries for a given motor speed. To convert the suns energy as efficiently as possible, we will power the motor directly with solar panels, connecting them in parallel with the PDBs output. Figure \ref{Solar_Circuit} shows a high level block diagram of our power system. As you can see from our power system block diagram, we will place a diode between the solar array and the motor input. This is to prevent current flowing from the battery back into the cells and potentially damaging them. We also include a computer controlled switch that can shut off current from the battery to save energy when we are getting enough power from the solar cells.
+
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3.5in]{Solar_Circuit.png}
+\caption{Power System}
+\label{Solar_Circuit}
+\end{figure}
+
+
 \section{Conclusion}
 We now have a control system implemented and ready to be simulated. We do not want to immediately jump into autonomous mode becuase if it does not work as we expect, the plane might crash, or fly far away and never return. For this reason, we are designing a Software in the Loop (SITL) simulation to detect any bugs in the autonomous code. One has been found already where if the aircraft is launched in the opposite direction from its first GPS waypoint, it will never turn around! The ArduPlane code tries to fly the plane around the entire world to hit the waypoint, but since our plane does not have enough battery life to make the journey, it would crash. Future work includes more simulation, and testing the autopilot in real time once we feel we have found all the bugs and we know how to avoid them.
 
