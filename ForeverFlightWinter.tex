@@ -14,13 +14,13 @@
 \begin{document}
 
 \title{Telemetry, Control Systems, and Sensors on an Autonomous Aircraft}
-\author{Maxwell~Bradley, Kodiak~North, and Zane~Bradley}
+\author{Maxwell~Bradley, Kodiak~North, Grady~Watkins, and Zane~Bradley}
 
 \date{\today} % leaving the brackets empty omits the date
 % To input the current date, you can type: \date{\today}
 
 % The paper headers
-\markboth{Autonomous Aerial Wildfire Detection}{Bradley, M; North, K; Bradley, Z}
+\markboth{Autonomous Aerial Wildfire Detection}{Bradley, M; North, K; Watkins, G; Bradley, Z}
 
 \IEEEcompsoctitleabstractindextext{%
 \begin{abstract}
@@ -32,7 +32,7 @@ data transfer system in the event of a fire.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Aircraft, Airplane, RC Airplane, UAV, Autonomous, Wildfire, Wildfire Detection, Search and Rescue
+Aircraft, Airplane, RC Airplane, UAV, Autonomous, Wildfire, Wildfire Detection, Search and Rescue, Solar Power
 \end{IEEEkeywords}}
 
 \maketitle
@@ -44,7 +44,6 @@ Aircraft, Airplane, RC Airplane, UAV, Autonomous, Wildfire, Wildfire Detection, 
 \IEEEPARstart{F}{orever} Flight is a persistent aerial monitoring system to detect wildfires in fire-prone areas. It will consist of a plane with a mounted IR camera to detect fires below and a flight controller capable of autopilot, guidable with GPS waypoints sent from a laptop computer on the ground. This project was named `Forever Flight' for its goal of never having to recharge its batteries, staying aloft and performing fire detection while the sun is up, charging back up from solar energy and our power regenerative mechanisms. 
 
 This project was inspired by the recent California wildfires like the Camp Fire, a 2018 fire in Northern California that caused \$16.5 billion in damage and claimed 86 lives [1]. The reason that these fires were so deadly is because there was no early warning system that detected the fire before it started ripping through towns like Paradise, California. The team hopes that Forever Flight will prevent fires like this.
-
 % MAX B
 \section{Data Transfer}
 \subsection{Introduction}
@@ -301,7 +300,7 @@ For our UAV, the team decided to go with a glider style aircraft over a delta-wi
 \centering
 \includegraphics[width=3in]{pitch_elevPWM.jpg}
 \caption{This plot if of aircraft pitch (red) and elevator deflection (blue) in PWM over the flight duration. A decrease in elevator PWM equates to the control surface deflecting upward, i.e. it causes the aircraft to pitch up. Notice that only pitch up elevator was applied throughout the entire flight, however the plane pitched up and down. This made it clear that the plane was not flying properly. Rather than spending time debugging the issue, we purchased a new plane that was guaranteed to fly well.}
-\label{gliderAndBird}
+\label{pitchOsc}
 \end{figure}
 \subsubsection{Tasks to Connect the Electronics}
 The first step in connecting the control system is to verify that all electronics are working properly before inserting them into the plane. This involves testing the servos and motor in a simple RC configuration without any autopilot, then connecting them to the autopilot and ensuring manual control can be taken with the flip of a switch, and finally integrating the wireless data transmission system.
@@ -449,8 +448,10 @@ Now with the electronics tried and tested, it is time for the moment we have all
 
 After mounting everything, power up the transmitter, connect the battery to the flight controller and test that all control surfaces move in the correct direction based on manual stick input. Then verify that the plane balances properly over its center of gravity. If it does not, shift something heavy (the battery works well) to correct this. Once all of these checks pass, the plane is ready for manual flight!
 
-\section{Fire Detection System}
+\subsection{Control System Conclusion}
+We now have a control system implemented and ready to be simulated. We do not want to immediately jump into autonomous mode becuase if it does not work as we expect, the plane might crash, or fly far away and never return. For this reason, we are designing a Software in the Loop (SITL) simulation to detect any bugs in the autonomous code. One has been found already where if the aircraft is launched in the opposite direction from its first GPS waypoint, it will never turn around! The ArduPlane code tries to fly the plane around the entire world to hit the waypoint, but since our plane does not have enough battery life to make the journey, it would crash. Future work includes more simulation, and testing the autopilot in real time once we feel we have found all the bugs and we know how to avoid them.
 
+\section{Fire Detection System}
 \subsection{Introduction}
 The fire detection system onboard the aircraft scans a stream of images for signs of fire. These images are captured by an Infrared camera. A background on the inner workings of this camera will be given below. Infrared imaging is only one of many feasible techniques. An overview of other techniques explored by other researchers will also be given. Finally, this section will detail the fire detection system implementation, the advantages of our implementation, and the drawbacks of our implementation. 
 
@@ -473,7 +474,7 @@ Many real world fire detection systems employ optical cameras. These operate in 
 
 The figure below demonstrates an optical image processing algorithm produced by Cruz et al. \cite{ffdi}. For each pixel of an input image, the algorithm computes the probability that the pixel is part of a fire. 
 
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
 \includegraphics[width=3.5in]{ffdi.png}
 \caption{The Forest Fire Detection Index algorithm with $\rho$ values of 0.1, 0.5, 0.75, 1, and 1.25. 
@@ -572,12 +573,12 @@ These models depend on information about the fire, such as location, the moistur
 
 It is important to keep in mind that models are only an approximation of true fire behavior, and are inherently inaccurate. Fires are also difficult and dangerous to reproduce in a laboratory setting. A large, realistic wildfire would never be purposely started for the sake of measurement. This means that data on wildfires is hard to come by, and of low quality. A model may also be inaccurate if certain assumptions are broken. Many models assume that the region on fire is composed of a single fuel source, which is uniformly dense.
 
-\subsection{Future Work}
+\subsection{Future Fire Detection Work}
 Given these additional fire characteristics, it is only natural that our project's scope should expand and provide additional information, beyond the location of a fire's starting point. Image recognition techniques could be used to measure the area of land covered by a fire. Similarly, image recognition could be used to describe the shape of a fire. This information is useful to fire fighters, because it allows them to predict the rate of spread, and the direction of travel of a fire. It will likely take first responders a non-trivial amount of time to arrive at the scene of a fire, and this information gives them some idea of what to expect. A fire will grow in the meantime between detection and fire fighter response. 
 
 % Grady
 \section{Solar}
-In the interest of maximizing our flight time, we have decided to mount solar panels on the wings of our plane. This will provide additional power to the motor, and result in less power being drawn from the batteries for a given motor speed. To convert the suns energy as efficiently as possible, we will power the motor directly with solar panels, connecting them in parallel with the PDBs output. Figure \ref{Solar_Circuit} shows a high level block diagram of our power system. As you can see from our power system block diagram, we will place a diode between the solar array and the motor input. This is to prevent current flowing from the battery back into the cells and potentially damaging them. We also include a computer controlled switch that can shut off current from the battery to save energy when we are getting enough power from the solar cells.
+In the interest of maximizing our flight time, we have decided to mount solar panels on the wings of our plane. This will provide additional power to the motor, and result in less power being drawn from the battery for a given motor speed. To convert the sun's energy as efficiently as possible, we will power the motor directly with solar panels, connecting them in parallel with the PDBs output. Figure \ref{Solar_Circuit} shows a high level block diagram of our power system. As you can see from our power system block diagram, we will place a diode between the solar array and the motor input. This is to prevent current flowing from the battery back into the cells and potentially damaging them. We also include a computer controlled switch that can shut off current from the battery to save energy when we are getting enough power from the solar cells.
 
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -587,9 +588,8 @@ In the interest of maximizing our flight time, we have decided to mount solar pa
 \label{Solar_Circuit}
 \end{figure}
 
-
 \section{Conclusion}
-We now have a control system implemented and ready to be simulated. We do not want to immediately jump into autonomous mode becuase if it does not work as we expect, the plane might crash, or fly far away and never return. For this reason, we are designing a Software in the Loop (SITL) simulation to detect any bugs in the autonomous code. One has been found already where if the aircraft is launched in the opposite direction from its first GPS waypoint, it will never turn around! The ArduPlane code tries to fly the plane around the entire world to hit the waypoint, but since our plane does not have enough battery life to make the journey, it would crash. Future work includes more simulation, and testing the autopilot in real time once we feel we have found all the bugs and we know how to avoid them.
+At the end of our first 10 week design phase, the team has accomplished a data logging system to capture important flight information such as aircraft attitude, and fire detection parameters. We are ready to integrate solar cells into the new, nice flying plane by utilizing the schematic in Figure \ref{Solar_Circuit}; along with a full migration of the flight controller from the old plane. After running multiple experiments with our current fire detection method, we have learned that our cheap IR sensor will not provide the range necessary to meet our minimum specification. We are currently exploring other options, and are preparing to implement a new sensor come our final 10 week design phase.
 
 \section*{Acknowledgements}
 Kodiak would like to thank the authors of Small Unmanned Aircraft, and Unmanned Aircraft Design for providing such detailed descriptions on UAV design and control. He would also like to thank all researchers that are apart of Glider soaring via reinforcement learning in the field \cite{GliderBirds} for conducting such excellent work that will contribute to his capstone project.
@@ -655,44 +655,21 @@ A. L. Westerling, A. Gershunov, T. J. Brown, D. R. Cayan, M. D. Dettinger, “Cl
 \bibitem{multisensor_network}
 I. Bosch, A. Serrano, and L. Vergara, “Multisensor Network System for Wildfire Detection Using Infrared Image Processing,” The Scientific World Journal, vol. 2013, Article ID 402196, 10 pages, 2013.
 
-
 \end{thebibliography}
 
+\vspace{1cm}
+
+\section*{Biographies}
 % Kodiak's amazing bio
-\begin{IEEEbiographynophoto}{Kodiak North}
-is currently a senior at the University of California - Santa Cruz. He is majoring in Robotics Engineering, and looking for a career in the new drone industry once he graduates. On his free time, Kodiak enjoys surfing, repairing his truck, and flying his RC race quadcopter.
-\end{IEEEbiographynophoto}
-
-\begin{IEEEbiographynophoto}{Maxwell Bradley}
-is a senior at UC Santa Cruz. He is a computer engineering major speciailizing in computer system, which dabbles in both hardware and software. He will be continuing into the computer engineering MS program here at UCSC after he completes his bachelors, and hopes to work for himself after he graduates. When he isn't laboring over some piece of code, he enjoys distance running, playing the guitar, and checking out breweries.
-\end{IEEEbiographynophoto}
-
+\textbf{Kodiak North}
+is currently a senior at the University of California - Santa Cruz. He is majoring in Robotics Engineering, and looking for a career in the new drone industry once he graduates. On his free time, Kodiak enjoys surfing, repairing his truck, and flying his RC race quadcopter.\\\\
+\noindent
+\textbf{Maxwell Bradley}
+is a senior at UC Santa Cruz. He is a computer engineering major specializing in computer system, which dabbles in both hardware and software. He will be continuing into the computer engineering MS program here at UCSC after he completes his bachelors, and hopes to work for himself after he graduates. When he isn't laboring over some piece of code, he enjoys distance running, playing the guitar, and checking out breweries.\\\\
+\noindent
 % Zane's bio
-\begin{IEEEbiographynophoto}{Zane Bradley}
+\textbf{Zane Bradley}
 is a 4th year Computer Engineering student at the University of California, Santa Cruz. He loves to hiking, traveling, listening to music, and programming in his free time.
-\end{IEEEbiographynophoto}
 
-
-
-
-% insert where needed to balance the two columns on the last page with
-% biographies
-%\newpage
-
-%\begin{IEEEbiographynophoto}{Jane Doe}
-%Biography text here.
-%\end{IEEEbiographynophoto}
-
-% You can push biographies down or up by placing
-% a \vfill before or after them. The appropriate
-% use of \vfill depends on what kind of text is
-% on the last page and whether or not the columns
-% are being equalized.
-
-%\vfill
-
-% Can be used to pull up biographies so that the bottom of the last one
-% is flush with the other column.
-%\enlargethispage{-5in}
 
 \end{document}
