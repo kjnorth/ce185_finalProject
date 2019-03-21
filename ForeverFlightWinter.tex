@@ -393,7 +393,7 @@ The next step is to configure the flight modes in mission planner so switches on
 \begin{figure*}[h]
 \hspace*{0cm}
 \centering
-\includegraphics[width=\textwidth]{hardwareBlockDiagram.jpg}
+%\includegraphics[width=\textwidth]{hardwareBlockDiagram.jpg}
 \caption{Diagram of all electronics in the aircraft.}
 \label{mainScheme}
 \end{figure*}
@@ -577,8 +577,9 @@ It is important to keep in mind that models are only an approximation of true fi
 Given these additional fire characteristics, it is only natural that our project's scope should expand and provide additional information, beyond the location of a fire's starting point. Image recognition techniques could be used to measure the area of land covered by a fire. Similarly, image recognition could be used to describe the shape of a fire. This information is useful to fire fighters, because it allows them to predict the rate of spread, and the direction of travel of a fire. It will likely take first responders a non-trivial amount of time to arrive at the scene of a fire, and this information gives them some idea of what to expect. A fire will grow in the meantime between detection and fire fighter response. 
 
 % Grady
-\section{Solar}
-In the interest of maximizing our flight time, we have decided to mount solar panels on the wings of our plane. This will provide additional power to the motor, and result in less power being drawn from the battery for a given motor speed. To convert the sun's energy as efficiently as possible, we will power the motor directly with solar panels, connecting them in parallel with the PDBs output. Figure \ref{Solar_Circuit} shows a high level block diagram of our power system. As you can see from our power system block diagram, we will place a diode between the solar array and the motor input. This is to prevent current flowing from the battery back into the cells and potentially damaging them. We also include a computer controlled switch that can shut off current from the battery to save energy when we are getting enough power from the solar cells.
+\section{Solar Power}
+\subsection{Power System Overview}
+In the interest of maximizing our flight time, we have decided to mount solar panels on the wings of our plane. This will provide additional power to the motor, and result in less power being drawn from the battery for a given motor speed. To convert the sun's energy as efficiently as possible, we will power the motor directly with solar panels, connecting them in parallel with the PDBs output. Figure \ref{Solar_Circuit} shows a high level block diagram of our power system. As you can see, we place a diode between the solar array and the motor input. This is to prevent current flowing from the battery back into the cells and potentially damaging them. We also include a computer controlled switch that can shut off current from the battery to save energy when we are getting enough power from the solar cells.
 
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -587,6 +588,12 @@ In the interest of maximizing our flight time, we have decided to mount solar pa
 \caption{Power System}
 \label{Solar_Circuit}
 \end{figure}
+
+\subsection{Power Calculations}
+We performed some power calculations to determine whether or we could draw enough power from the sun to add significant flight time to our aircraft.  The suns energy needs to go through several steps to be converted into propeller thrust. First, the solar cells convert photon energy into an electric potential difference that causes current to flow from the cells terminals.  This process is very inefficient; typical solar cells convert only twenty percent of the suns energy into electrical power. The other factor in determining usable power is the quantity of solar cells on the plane.  The power output of our solar array is directly proportional to the combined area of our cells.  To calculate the net power from our solar array power output, we multiply the suns power per area, or intensity, by the net area of our cells, and then again by the cell efficiency.  
+\[ P_{net} = (I_{sun})(A_{cells})(\eta_{cell}) \]
+Using twelve 22\% efficient cells, we are able to draw 77 watts of solar power.  This is enough to power our planes motor at about half throttle.  This means that if we have direct sunlight overhead, we should be able to keep the plane in the air with solar power alone.
+
 
 \section{Conclusion}
 At the end of our first 10 week design phase, the team has accomplished a data logging system to capture important flight information such as aircraft attitude, and fire detection parameters. We are ready to integrate solar cells into the new, nice flying plane by utilizing the schematic in Figure \ref{Solar_Circuit}; along with a full migration of the flight controller from the old plane. After running multiple experiments with our current fire detection method, we have learned that our cheap IR sensor will not provide the range necessary to meet our minimum specification. We are currently exploring other options, and are preparing to implement a new sensor come our final 10 week design phase.
@@ -670,6 +677,10 @@ is a senior at UC Santa Cruz. He is a computer engineering major specializing in
 % Zane's bio
 \textbf{Zane Bradley}
 is a 4th year Computer Engineering student at the University of California, Santa Cruz. He loves to hiking, traveling, listening to music, and programming in his free time.
+\noindent
+% Grady Bio
+\textbf{Grady Watkins}
+is a senior at UC Santa Cruz studying electrical engineering. In his free time he enjoys playing Ultimate Frisbee, rock climbing, surfing, and playing video games.
 
 
 \end{document}
