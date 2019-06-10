@@ -5,10 +5,10 @@
 \usepackage{float}
 \usepackage[hidelinks]{hyperref}
 \hypersetup{% this is so dank I've been trying to do this FOREVER
-  colorlinks=true,% all links are colored and not outlined
-  linkcolor=black,% hyperlink (PDF internal links like in toc) colors will be black
-  urlcolor=blue,
-  citecolor=black
+colorlinks=true,% all links are colored and not outlined
+linkcolor=black,% hyperlink (PDF internal links like in toc) colors will be black
+urlcolor=blue,
+citecolor=black
 }
 
 \begin{document}
@@ -412,7 +412,7 @@ A major component in the plane is a power switching circuit that chooses which s
 \caption{Power source switch first iteration. Q1 and Q3 are SUP70101EL power MOSFETS, Q2 and Q4 are 2N3904 transistors. R1 is 180 $k\Omega$, R2 is 18 $k\Omega$, R3 is 180 $k\Omega$, and R4 is 12 $k\Omega$. C1 is a 300 $\mu F$ capacitor that filters out noise when switching sources. Solar En and Battery En are 3.3V inputs from a microcontroller that enable solar or battery power via an open collector transistor configuration.}
 \label{solSchem1}
 \end{figure}
-This circuit worked in theory, but when tested, a major flaw was discovered due to the intrinsic body diode in Q3. When Solar En is high and Battery En is low, 16 volts is applied to the motor. If we focus our attention to Q3, we notice that 16 volts is applied to its drain, while 12.5 volts is applied at the source. Since the potential difference between 16 volts and 12.5 volts is enough to forward bias the body diode, Q3 is ``turned on" even though the input is low! This shorts the two power sources and back drives the battery with a small amount of current. Back driving a battery is equivalent to charging it, but since we used lithium polymer batteries that have a high probability of combusting when overcharged, we opted to steer clear of uncontrollably charging the battery. A more problematic scenario would occur if battery power was on, and the solar array voltage was low enough to forward bias Q1's body diode. This would back drive the solar array and potentiall damage it. We migitagated this issue by adding transistors Q5 and Q6 in Figure \ref{solSchem2}.
+This circuit worked in theory, but when tested, a major flaw was discovered due to the intrinsic body diode in Q3. When Solar En is high and Battery En is low, 16 volts is applied to the motor. If we focus our attention to Q3, we notice that 16 volts is applied to its drain, while 12.5 volts is applied at the source. Since the potential difference between 16 volts and 12.5 volts is enough to forward bias the body diode, Q3 is ``turned on" even though the input is low! This shorts the two power sources and back drives the battery with a small amount of current. Back driving a battery is equivalent to charging it, but since we used lithium polymer batteries that have a high probability of combusting when overcharged, we opted to steer clear of uncontrollably charging the battery. A more problematic scenario would occur if battery power was on, and the solar array voltage was low enough to forward bias Q1's body diode. This would back drive the solar array and potentially damage it. We mitigated this issue by adding transistors Q5 and Q6 in Figure \ref{solSchem2}.
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
@@ -420,7 +420,7 @@ This circuit worked in theory, but when tested, a major flaw was discovered due 
 \caption{Power source switch final iteration. Q1, Q3, Q5, and Q6 are SUP70101EL power MOSFETS; Q2 and Q4 are 2N3904 transistors. Note that the sources of Q1 and Q5; and Q3 and Q6 are tied together to prevent current backflow. R1 is 10 $k\Omega$, R2 is 18 $k\Omega$, R3 is 10 $k\Omega$, and R4 is 12 $k\Omega$. C1 is a 300 $\mu F$ capacitor that filters out noise when switching sources. Solar En and Battery En are 3.3V inputs from a microcontroller that enable solar or battery power via an open collector transistor configuration.}
 \label{solSchem2}
 \end{figure}
-These were added to use body diodes to our advantage. By tying the sources of Q1 and Q5 (and Q3 and Q6) together, the body diodes opposed each other which effectively prevented any backflow of current. The first iteration also had an issue where transistors Q2 and Q4 did not operate deeply enough in the triode region. This caused one to blow during the testing phase. R1 and R3 were swapped with 10 $k\Omega$ resistors to alter the region these transistors operated in. See Figure \ref{solSchem2}'s caption for the updates. This circuit was created using deadbug style soldering since the power lines needed to handle up to 30 amps of current. 12 awg copper wire and a large ground plane had more than enough capacity to handle the large current demands.
+These were added to use body diodes to our advantage. By tying the sources of Q1 and Q5 (and Q3 and Q6) together, the body diodes opposed each other which effectively prevented any backflow of current. The first iteration also had an issue where transistors Q2 and Q4 did not operate deeply enough in the triode region. This caused one to blow during the testing phase. R1 and R3 were swapped with 10 $k\Omega$ resistors to alter the region these transistors operated in. See Figure \ref{solSchem2}'s caption for the updates. This circuit was created using dead bug style soldering since the power lines needed to handle up to 30 amps of current. 12 awg copper wire and a large ground plane had more than enough capacity to handle the large current demands.
 
 \subsection{Flight Time Extension}
 \subsubsection{Introduction}
@@ -451,7 +451,6 @@ A UART link between the Teensy and Pixhawk allows the Teensy to set the Pixhawks
 \includegraphics[width=3.5in]{altitude_transmission_state_machine.png}
 \caption{The Teensy first measures the barometer's altitude, then sends a special 'start' byte. Upon reading this byte, the Pixhawk sends a corresponding acknowledgement byte. The transmission of the 4 data bytes proceed in this same pattern. Finally, a stop byte and stop acknowledgement are exchanged.} 
 \end{figure}
-  
 \subsubsection{Results}
 The 3 plots in figure \ref{flight_altitude_voltage_pwm_plot} show the results of a 20 minute test flight. The Altitude Control Algorithm was not used, and instead the solar and battery power sources were manually switched. The pilot of the plane manually climbed and power glided the plane as well. In effect, this was a test of the Altitude Control Algorithm. The flight time was greatly extended beyond what the battery was capable of providing on its own.
 
@@ -466,18 +465,18 @@ The 3 plots in figure \ref{flight_altitude_voltage_pwm_plot} show the results of
 \section{Looking Back}
 After spending roughly 6 months designing this system, there are a few things we could have done differently to get closer to reaching our goals.
 
-First off, we should have begun our search for funding much earlier. We were self-funding everything at the start of our project, and trying to be as cheap as possible. This approach caused two major setbacks during our first 3 months; the homemade plane we built did not fly well, crashed, and was never used; and the first IR camera we purchased did not have anywhere near the range and resolution we needed to hit our minimum specifications. Had we received funding earlier, we could have purchased nicer equipment from the beginnig to save a few headaches.
+First off, we should have begun our search for funding much earlier. We were self-funding everything at the start of our project, and trying to be as cheap as possible. This approach caused two major setbacks during our first 3 months; the homemade plane we built did not fly well, crashed, and was never used; and the first IR camera we purchased did not have anywhere near the range and resolution we needed to hit our minimum specifications. Had we received funding earlier, we could have purchased nicer equipment from the beginning to save a few headaches.
 
-Secondly, the team should have spent time making an IR camera work for our specifications before writing a custom communication protocol to send fire detection data. One memeber spent the first full 3 month design period writing this protocol that ultimately was never used because we had hardware issues with our IR cameras. Next time, we will be sure to reorder the fire detection implementation process.
+Secondly, the team should have spent time making an IR camera work for our specifications before writing a custom communication protocol to send fire detection data. One member spent the first full 3 month design period writing this protocol that ultimately was never used because we had hardware issues with our IR cameras. Next time, we will be sure to reorder the fire detection implementation process.
 
-Next, we would have received better use out of the Pixhawk flight controller if we treated it more as a black box that did nothing but fly the plane autonomously. Many of our bottlenecks arose because we were trying to alter its open source code, ArduPilot. Every single modification made to ArduPilot turned out to be a major chore that always seemed to break something else unrelated to the new addition. And it did not help that the code was poorly documented and lacked organization. In the future, we know to get a second microcontoller such as a Teensy 3.2 much earlier. This will save us countless hours modifying and debugging code that other developers wrote.
+Next, we would have received better use out of the Pixhawk flight controller if we treated it more as a black box that did nothing but fly the plane autonomously. Many of our bottlenecks arose because we were trying to alter its open source code, ArduPilot. Every single modification made to ArduPilot turned out to be a major chore that always seemed to break something else unrelated to the new addition. And it did not help that the code was poorly documented and lacked organization. In the future, we know to get a second microcontroller such as a Teensy 3.2 much earlier. This will save us countless hours modifying and debugging code that other developers wrote.
 
 Moving on, we learned that unobstructed airflow over a wing is imperative for efficient, safe flying. The first time we attached the solar array to the wing, we worked too quickly and did a poor job. This eventually led to a crash because solar cells detached mid-flight on one side of the wing. The aircraft fell out of the sky like a rock and blew apart upon impact with the ground. Fortunately we were able to purchase a new plane before the project ended, and it never crashed again. However, we could not gain back any of the lost time when we were grounded. The lesson learned is that haste makes waste.
 
 Finally, the team did not spend enough test flying our plane. We assumed things would work well once we got all of the flight controller's parameters sorted out, but of course we were mistaken. Our troubles with the attitude heading reference system may have been resolved if we test flew and debugged in-flight problems more often. Part of the reason why we flew so little was due to our poor laboratory location. It took over an hour to get to the flying field and another hour to get back. On top of this, flights strictly on battery power only lasted ten minutes, and we had two batteries. A lot of time was wasted travelling to spend little time testing. Next time, we will be sure to better streamline our testing process, or design a project that can be more easily tested in our lab room.
 
 \section{Future Work}
-Future work includes designing a new airplane with a lighter airframe, a larger wing area with solar cells integrated inside of the wing, and more efficient solar cells. These three additions will surely put us over a 2 hour solar flight since the plane will require less speed (i.e. less power) to generate enough lift to maintain altitude. On top of this, we will purchase an IR camrea that suits our specifications well, complete more test flights, and put together a robust autonomous airborne fire detection system.
+Future work includes designing a new airplane with a lighter airframe, a larger wing area with solar cells integrated inside of the wing, and more efficient solar cells. These three additions will surely put us over a 2 hour solar flight since the plane will require less speed (i.e. less power) to generate enough lift to maintain altitude. On top of this, we will purchase an IR camera that suits our specifications well, complete more test flights, and put together a robust autonomous airborne fire detection system.
 
 \section{Conclusion}
 %%%%% UPDATE THIS
@@ -630,11 +629,11 @@ The FlighDeck software from Craft and Theory can serve as a backup ground statio
 
 \section{Radio Communication}
 \subsection{SiK Radio LED patterns}
-The two radio modules on the aircraft, and the corresponding two on the ground station are all equipped with status LEDs. These LEDs blink in different patterns to indicate the state of the radio. When the green LED is blinking, the radio is searching for another radio, and is not yet capable of transmitting or receiving data. When the green LED is solid and not blinking, the radio has established a connection with another radio on its channel, and is capable of transmitting and receiving data. The red LED blinks each time a byte is transmitted or received. The red LED is solid and not blinking when the radio is in firmware update mode.   
+The two radio modules on the aircraft, and the corresponding two on the ground station are all equipped with status LEDs. These LEDs blink in different patterns to indicate the state of the radio. When the green LED is blinking, the radio is searching for another radio, and is not yet capable of transmitting or receiving data. When the green LED is solid and not blinking, the radio has established a connection with another radio on its channel, and is capable of transmitting and receiving data. The red LED blinks each time a byte is transmitted or received. The red LED is solid and not blinking when the radio is in firmware update mode. 
 
 \subsection{Modifying SiK Radio Channels}
 \subsubsection{Introduction}
-By default, all 2 pairs of telemetry radios used on the aircraft were configured to use the same channel. This means that data sent through one pair of radios was accessible from the other 2 pairs of radios. To create multiple, independent lines of communication, it is necessary to separate the radios into individual channels. Each radio has a parameter stored in its EEPROM called its 'net ID'. This net ID is a single 8 bit integer. Radios with the same net ID can communicate with each other, and radios with different net IDs cannot.    
+By default, all 2 pairs of telemetry radios used on the aircraft were configured to use the same channel. This means that data sent through one pair of radios was accessible from the other 2 pairs of radios. To create multiple, independent lines of communication, it is necessary to separate the radios into individual channels. Each radio has a parameter stored in its EEPROM called its 'net ID'. This net ID is a single 8 bit integer. Radios with the same net ID can communicate with each other, and radios with different net IDs cannot. 
 \subsubsection{Net ID modification procedure}
 The firmware of the radios may require a re-flash to ensure compatibility. Download 
 \href{https://drive.google.com/open?id=17GBNzsjTxYfQuoexLm5VmItGezQfW7dR}{SiK HM-TRP}. Install \href{http://ardupilot.org/planner/}{Mission Planner}, which provides a tool for modifying radio parameters. To change the net ID of a pair of radios, follow this procedure.
@@ -738,3 +737,4 @@ is a 4th year Computer Engineering student at the University of California, Sant
 
 
 \end{document}
+
