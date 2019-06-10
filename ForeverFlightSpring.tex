@@ -25,10 +25,10 @@
 \IEEEcompsoctitleabstractindextext{%
 \begin{abstract}
 This paper describes the subsystems onboard an autonomous aircraft that detects wildfires. The first subsystem is the 
-data transfer system, between the aircraft and the ground. The second is the control system, which navigates the plane
-between predefined way points, and keeps it on course in the event of wind or thermals. The third system is the 
-fire detection system, which scans incoming images, determines if there is a fire present, and communicates with the 
-data transfer system in the event of a fire.
+telemetry system, which continuously transmits information about the aircraft to a ground station. 
+The second is the control system, which navigates the plane between predefined way points, and keeps it on course 
+in the event of wind or thermals. The third system is the fire detection system, which surveys the area beneath the aircraft, 
+determines if there is a fire present, and communicates through the telemetry system in the event of a fire.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -49,7 +49,7 @@ This project was inspired by the recent California wildfires like the Camp Fire,
 \subsection{Introduction}
 There is a large amount of information coming out of the aircraft at any time, transferred over telemetry. This transfer contains a huge amount of different kinds of data, such as fire detection stats, fire detection processing, GPS coordinates, and more. Getting this kind of information out of the plane can be challenging because of the flight controller's running overhead and varying transmission protocol versions. I will focus this section of the paper on the transfer of data between the in-flight aircraft and the ground control station.
 
-\subsection{Materials and Material Background}
+\subsection{System Components}
 Many different components make up the data transmission path between the plane itself and the ground station. I will now discuss each of those components in detail.
 
 \subsubsection{Pixhawk Flight Controller}
@@ -260,7 +260,7 @@ After mounting everything, power up the transmitter, connect the battery to the 
 \subsection{Control System Conclusion}
 We now have a flight system implemented and ready to be simulated. We do not want to immediately jump into autonomous mode becuase if it does not work as we expect, the plane might crash, or fly far away and never return. For this reason, we are designing a Software in the Loop (SITL) simulation to detect any bugs in the autonomous code. One has been found already where if the aircraft is launched in the opposite direction from its first GPS waypoint, it will never turn around! The ArduPlane code tries to fly the plane around the entire world to hit the waypoint, but since our plane does not have enough battery life to make the journey, it would crash. Once we feel like everything looks good in the simulator, we will launch the plane on its maiden voyage.
 
-\section{Fire Detection System}
+\section{Fire Detection}
 \subsection{Introduction}
 The fire detection system onboard the aircraft scans a stream of images for signs of fire. These images are captured by an Infrared camera. A background on the inner workings of this camera will be given below. Infrared imaging is only one of many feasible techniques. An overview of other techniques explored by other researchers will also be given. Finally, this section will detail the fire detection system implementation, the advantages of our implementation, and the drawbacks of our implementation. 
 
@@ -387,7 +387,7 @@ Given these additional fire characteristics, it is only natural that our project
 
 % Grady
 \section{Solar}
-In the interest of maximizing our flight time, we have decided to mount solar panels on the wings of our plane. This will provide additional power to the motor, and result in less power being drawn from the battery for a given motor speed. To convert the sun's energy as efficiently as possible, we will power the motor directly with solar panels, connecting them in parallel with the PDBs output. Figure \ref{Solar_Circuit} shows a high level block diagram of our power system. As you can see from our power system block diagram, we will place a diode between the solar array and the motor input. This is to prevent current flowing from the battery back into the cells and potentially damaging them. We also include a computer controlled switch that can shut off current from the battery to save energy when we are getting enough power from the solar cells.
+In the interest of maximizing flight time, solar panels are mounted on the wings of the plane. This will provide additional power to the motor, and result in less power being drawn from the battery for a given motor speed. To convert the sun's energy as efficiently as possible, we will power the motor directly with solar panels, connecting them in parallel with the power management board's output. Figure \ref{Solar_Circuit} shows a high level block diagram of our power system. As you can see from the power system block diagram, we will place a diode between the solar array and the motor input. This is to prevent current flowing from the battery back into the cells and potentially damaging them. We also include a computer controlled switch that can shut off current from the battery to save energy when we are getting enough power from the solar cells.
 
 \begin{figure}[h!]
 \hspace*{0cm}
@@ -422,13 +422,56 @@ This circuit worked in theory, but when tested, a major flaw was discovered due 
 \end{figure}
 These were added to use body diodes to our advantage. By tying the sources of Q1 and Q5 (and Q3 and Q6) together, the body diodes opposed each other which effectively prevented any backflow of current. The first iteration also had an issue where transistors Q2 and Q4 did not operate deeply enough in the triode region. This caused one to blow during the testing phase. R1 and R3 were swapped with 10 $k\Omega$ resistors to alter the region these transistors operated in. See Figure \ref{solSchem2}'s caption for the updates. This circuit was created using deadbug style soldering since the power lines needed to handle up to 30 amps of current. 12 awg copper wire and a large ground plane had more than enough capacity to handle the large current demands.
 
-\subsection{Flight Time Extension Software}
+\subsection{Flight Time Extension}
+\subsubsection{Introduction}
+The circuit described above implements the switch that electrically connects the battery or solar panels to the motor. The circuit is driven by two inputs - Solar Enable and Battery Enable. This section will describe the software and hardware components of the system that drives these two inputs. 
+
+\subsubsection{Altitude Control Algorithm}
+The heart of the system is a simple state machine which decides if the plane should be climbing or power gliding. This state machine is shown in the figure below. 
+
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3.5in]{altitude_state_machine.png}
+\caption{While climbing, the plane exclusively uses battery power. The flight control system is commanded to fly to a target altitude. While cruising, the plane exclusively uses solar power. It will attempt to maintain the same target altitude, but will fall if insufficient solar power is available.}
+\label{altitude_state_machine}
+\end{figure}
+
+This state machine was implemented on a Teensy 3.1 microcontroller. The state machine drives two digital output pins on the Teensy, which are connected to Solar Enable and Battery Enable. 
+
+\subsubsection{Measuring Altitude}
+The Pixhawk 4 Flight Controller comes with an internal barometer. However, the plane uses an external barometer to measure altitude. This was done because the Pixhawk's barometer was found to be extremely unreliable. The external barometer is mounted inside the plane, in a small slit cut into the foam of the plane's body. This prevents wind from affecting the altitude measurements. It is connected to the Teensy through I2C. The Teensy continuously polls the barometer for new altitude measurements. The Altitude Control Algorithm mentioned above transitions between states based on these measurements. Since the Pixhawk has a bad barometer, these measurements are also sent to the Pixhawk and replace the measurements of the internal barometer. The system which transmits altitude measurements to the Pixhawk is described in the section below.
+
+\subsubsection{Passing Altitude to Flight Controller}
+A UART link between the Teensy and Pixhawk allows the Teensy to set the Pixhawks's target altitude and as well as its estimated altitude. A state machine running on the Teensy constantly transmits these two altitudes, byte by byte, to the FC. A separate state machine running on the FC waits for target and estimated altitudes, and updates its internal navigation algorithm. Both altitude measurements are 32 bit floating point numbers, and are in units of millimeters. The transmission protocol is relatively simple, and only ensures that the Pixhawk and Teensy remain synchronized. It does not handle transmission failures, or re-synchronization in the event that the state machines are out of synchronization. 
+
+\begin{figure}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=3.5in]{altitude_transmission_state_machine.png}
+\caption{The Teensy first measures the barometer's altitude, then sends a special 'start' byte. Upon reading this byte, the Pixhawk sends a corresponding acknowledgement byte. The transmission of the 4 data bytes proceed in this same pattern. Finally, a stop byte and stop acknowledgement are exchanged.} 
+\end{figure}
+  
+\subsubsection{Results}
+The 3 plots in figure \ref{flight_altitude_voltage_pwm_plot} show the results of a 20 minute test flight. The Altitude Control Algorithm was not used, and instead the solar and battery power sources were manually switched. The pilot of the plane manually climbed and power glided the plane as well. In effect, this was a test of the Altitude Control Algorithm. The flight time was greatly extended beyond what the battery was capable of providing on its own.
+
+\begin{figure*}[h!]
+\hspace*{0cm}
+\centering
+\includegraphics[width=\textwidth]{alt_vs_time_flight2_05-28-2019.jpg}
+\caption{The top plot shows the relative altitude of the plane over the course of a 20 minute flight. The middle plot shows the voltage of the currently active power source. Notice that the battery voltage is relatively stable, while the solar panel voltage is noisy, and frequency spikes up. The bottom plot shows the manual throttle input given to the plane. A PWM duty cycle of 2000 microseconds is 100\% throttle, which was only possible on battery power. The highest possible input with solar power was about 1800 microseconds, or roughly 50\% throttle. The sections in blue indicate when the plane was solely powered by the battery. The sections in red indicate when the plane was solely powered by solar panels. }
+\label{flight_altitude_voltage_pwm_plot}
+\end{figure*}
 
 \section{Looking Back}
 \section{Future Work}
 
 \section{Conclusion}
 At the end of our first 10 week design phase, the team has accomplished a data logging system to capture important flight information such as aircraft attitude, and fire detection parameters. We are ready to integrate solar cells into the new, nice flying plane by utilizing the schematic in Figure \ref{Solar_Circuit}; along with a full migration of the flight controller from the old plane. After running multiple experiments with our current fire detection method, we have learned that our cheap IR sensor will not provide the range necessary to meet our minimum specification. We are currently exploring other options, and are preparing to implement a new sensor come our final 10 week design phase.
+
+%
+% BEGIN APPENDICES
+%
 
 \appendices
 \section{Electronics}
@@ -571,6 +614,33 @@ The FlighDeck software from Craft and Theory can serve as a backup ground statio
 \end{enumerate}
 \end{enumerate}
 
+\subsection{SiK Radio LED patterns}
+The two radio modules on the aircraft, and the corresponding two on the ground station are all equipped with status LEDs. These LEDs blink in different patterns to indicate the state of the radio. When the green LED is blinking, the radio is searching for another radio, and is not yet capable of transmitting or receiving data. When the green LED is solid and not blinking, the radio has established a connection with another radio on its channel, and is capable of transmitting and receiving data. The red LED blinks each time a byte is transmitted or received. The red LED is solid and not blinking when the radio is in firmware update mode.   
+
+\subsection{Modifying SiK Radio Channels}
+\subsubsection{Introduction}
+By default, all 2 pairs of telemetry radios used on the aircraft were configured to use the same channel. This means that data sent through one pair of radios was accessible from the other 2 pairs of radios. To create multiple, independent lines of communication, it is necessary to separate the radios into individual channels. Each radio has a parameter stored in its EEPROM called its 'net ID'. This net ID is a single 8 bit integer. Radios with the same net ID can communicate with each other, and radios with different net IDs cannot.    
+\subsubsection{Net ID modification procedure}
+The firmware of the radios may require a re-flash to ensure compatibility. Download 
+\href{https://drive.google.com/open?id=17GBNzsjTxYfQuoexLm5VmItGezQfW7dR}{SiK HM-TRP}. Install \href{http://ardupilot.org/planner/}{Mission Planner}, which provides a tool for modifying radio parameters. To change the net ID of a pair of radios, follow this procedure.
+
+\begin{enumerate}
+\item Connect the local radio to your computer, and apply power to the remote radio.
+\item Navigate to Mission Planner$>$Initial Setup$>$Optional Hardware$>$Sik Radio.
+\item Click “Load Settings” and wait a while. The settings for both the local and remote radio should appear. 
+\item Change the net ID setting to a new value. Note that you have not yet changed the remote radio’s net ID.
+\item Click “Copy required to remote”. The remote net ID should change. Note that you have not yet changed the remote radio’s net ID.
+\item Click “Save Settings” to write the net ID to the local and remote radios, and then wait a while. If you get an error message saying “command failed”, don’t worry.
+\item Once the settings have been saved, close the configuration interface and unplug the radios.
+\item Plug the radios back in and reopen the configuration interface.
+\item Click “Load Settings”, and wait a while. 
+\item The new net IDs should show up when the settings load.
+\end{enumerate}
+
+% 
+% END APPENDICES
+%
+
 \section*{Acknowledgements}
 Kodiak would like to thank the authors of Small Unmanned Aircraft, and Unmanned Aircraft Design for providing such detailed descriptions on UAV design and control. He would also like to thank all researchers that are apart of Glider soaring via reinforcement learning in the field \cite{GliderBirds} for conducting such excellent work that will contribute to his capstone project.
 
@@ -649,7 +719,7 @@ is a senior at UC Santa Cruz. He is a computer engineering major specializing in
 \noindent
 % Zane's bio
 \textbf{Zane Bradley}
-is a 4th year Computer Engineering student at the University of California, Santa Cruz. He loves to hiking, traveling, listening to music, and programming in his free time.
+is a 4th year Computer Engineering student at the University of California, Santa Cruz. He loves hiking, traveling, listening to music, and programming in his free time.
 
 
 \end{document}
