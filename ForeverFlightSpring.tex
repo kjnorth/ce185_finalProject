@@ -387,21 +387,25 @@ Given these additional fire characteristics, it is only natural that our project
 
 % Grady
 \section{Solar}
-In the interest of maximizing flight time, solar panels are mounted on the wings of the plane. This will provide additional power to the motor, and result in less power being drawn from the battery for a given motor speed. To convert the sun's energy as efficiently as possible, we will power the motor directly with solar panels, connecting them in parallel with the power management board's output. Figure \ref{Solar_Circuit} shows a high level block diagram of our power system. As you can see from the power system block diagram, we will place a diode between the solar array and the motor input. This is to prevent current flowing from the battery back into the cells and potentially damaging them. We also include a computer controlled switch that can shut off current from the battery to save energy when we are getting enough power from the solar cells.
+In the interest of maximizing flight time, we made the design decision to use the sun as an additional power source to power our motor. The suns photons are converted into electrical energy by solar cells mounted on the wings of the plane. The solar array could not generate enough power alone to maintain our planes altitude, so it acted as a way to limit the amount of power the battery used. 
+
+\subsection{Choosing Solar Cells}
+When choosing which solar cells to use in our design, we had to consider several constraints. Firstly, the cells had to be lightweight. All additional weight that the plane carries increases the power output needed to maintain altitude. A heavier plane requires more lift to counteract gravity, which means a higher airspeed is needed to generate that lift, which means the power draw of the motor must increase. Secondly, the solar cells must be high efficiency. The efficiency of a solar cell is the fraction of photon energy hitting its surface that is successfully converted into electrical energy in the form of a voltage and current. Because an airplane wing has curvature, the cells need to be able to flex slightly to match the shape of the wing. Our last constraint was cost. We had a finite budget, and sought to meet our other constraints as best as possible, while remaining within our budget. The cells we decided on were SunPower C60s. They are lightweight, at 10 grams each, have an efficiency of 22.5 percent, have some flexibility, and cheap enough to fit our price range.
+
+\subsection{Building the Solar Array}
+Before constructing the solar array and attaching it to the wing, we had to decide on how many to use, and how to wire them.  To maximize the power output of the solar array, we placed as many cells as would fit onto the wing, without any hanging off, or being bent to the point they would crack. Complying with these constraints, we fit a total of 26 cells on the wing. We decided to wire the solar cells in series, both because it was simple, and gave an output voltage above the motors voltage requirement. The mounting of the cells involved soldering the entire array of cells on a table, then carefully applying glue to the cells and placing them on the wing. Below is a diagram of our solar array layed out on the plane wings.
 
 \begin{figure}[h!]
 \hspace*{0cm}
 \centering
-\includegraphics[width=3.5in]{Solar_Circuit.png}
-\caption{Power System}
-\label{Solar_Circuit}
+\includegraphics[width=3.5in]{"Solar_wing".png}
+\caption{Solar Cell Layout}
+\label{}
 \end{figure}
 
-\subsection{Building the Solar Array}
-% write stuff
+\subsection{Aircraft Aerodynamics}
+We learned an important lesson in aerodynamics after a solar cell came partially detached during a test flight, and caused the plane to crash. Fast moving air had caused an upward force to be exerted on the cell, and ripped it off of the wing. Back in the lab, we took some time to carefully reconsider the way we attached our solar cells to the wing. To keep the flight characteristics of the plane from being altered, and to prevent the solar cells from detaching, we needed to ensure the cells flexed to match the curvature of the wing, and that no air would be able to flow underneath the cells. To ensure that the cells matched the curvature of the wing, we weighed down the entire area of the cell with sandbags while the glue dried. We had previously used spare batteries and other lab equipment to weigh down the drying cells. We took an additional precaution by laying a line of transparent packing tape around the edges. This was to keep fast moving air from reaching underneath the solar cells and potentially breaking them off.
 
-\subsection{Aircraft Aerodynamic Issues}
-% more stuff
 
 \subsection{Solar/Battery Power Source Switching Circuit}
 A major component in the plane is a power switching circuit that chooses which source powers the motor based on inputs from a microcontroller. The idea is to switch into solar power whenever the plane has altitude to spare. It will remain in solar if array generates enough power to remain at cruising altitude. Otherwise it will use whatever power generated to slowly descend in a powered glide, and upon reaching a low altitude threshold, switch into battery power to climb back to a safe altitude. The first iteration of the circuit is in Figure \ref{solSchem1}.
